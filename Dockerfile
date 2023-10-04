@@ -1,13 +1,18 @@
 FROM golang:1.21.1-bullseye
 # RUN go mod download
 # RUN mkdir -p /app
-WORKDIR /go/cmd/momentum/app
+WORKDIR /usr/src/app
+# COPY go.mod .
+# COPY go.sum .
+# COPY /cmd/momentum/. .
+# COPY /internal/. .
 COPY . .
-COPY /cmd/momentum/. .
-RUN go get -d -v ./...
-RUN go install -v ./...
-RUN go build -o bin .
+# RUN go get -d -v ./...
+# RUN go install -v ./...
+RUN go build -o bin ./cmd/momentum
+
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/go/cmd/momentum/app/bin" ]
+# ENTRYPOINT [ "/go/cmd/momentum/app/bin" ]
+CMD [ "./bin" ]

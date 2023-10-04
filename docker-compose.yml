@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  momentum:
+   build:
+      context: .
+      dockerfile: Dockerfile
+   ports:
+    - 8080:8080
+   volumes:
+    - ./:/usr/src/app/
+   environment:
+      - COMPOSE_CONVERT_WINDOWS_PATHS=1
+   command: go run cmd/momentum/main.go -b 0.0.0.0
+volumes:
+  mdata:

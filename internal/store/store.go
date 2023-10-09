@@ -37,19 +37,20 @@ func ContentDB() {
 	DB.AutoMigrate(&models.User{})
 }
 
-func CreateUser() {
-	// var payload *models.SignUpInput
-	var user models.User
+// Creates a record of a new user in the database if his name is unique
+func CreateUser(user models.UserInput) *models.UserResponse {
+	var userModel models.User
+
 	now := time.Now()
 
 	newUser := models.User{
-		Name:         "Serhii", // payload.Name
-		Hashpassword: "123456", // hashedPassword
+		Name:         user.Name,
+		Hashpassword: user.Password,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
 
-	userExist := DB.Find(&user, "name = ?", newUser.Name)
+	userExist := DB.Find(&userModel, "name = ?", newUser.Name)
 
 	if userExist.RowsAffected == 1 {
 		fmt.Println("User with that name already exists")
@@ -70,7 +71,7 @@ func CreateUser() {
 		CreatedAt: newUser.CreatedAt,
 		UpdatedAt: newUser.UpdatedAt,
 	}
-	fmt.Println(userResponse)
+	return userResponse
 }
 
 func GetUser() {

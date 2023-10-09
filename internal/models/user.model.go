@@ -15,10 +15,9 @@ type User struct {
 	UpdatedAt    time.Time
 }
 
-type SignUpInput struct {
-	Name            string `json:"name" binding:"required"`
-	Password        string `json:"password" binding:"required,min=8"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+type UserInput struct {
+	Name     string `json:"name" binding:"required"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 type UserResponse struct {

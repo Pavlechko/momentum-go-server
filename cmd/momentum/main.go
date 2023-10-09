@@ -7,8 +7,8 @@ import (
 
 func main() {
 	store.ContentDB()
-	// store.CreateUser()
-	// store.GetUser()
-	routes.SetupRoutes()
+
+	server := routes.NewAPIServer(":8080")
+	server.Run()
 	// time.Sleep(10 * time.Second)
 }

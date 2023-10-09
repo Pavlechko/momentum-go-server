@@ -6,23 +6,27 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"momentum-go-server/internal"
 	"momentum-go-server/internal/handlers"
 )
 
-func SetupRoutes() {
-	m := internal.Message()
+type APIServer struct {
+	listenPort string
+}
+
+func NewAPIServer(listenPort string) *APIServer {
+	return &APIServer{
+		listenPort: listenPort,
+	}
+}
+
+func (s *APIServer) Run() {
 
 	r := mux.NewRouter()
-
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Welcome to the home page!", m)
-	})
 
 	r.HandleFunc("/auth/signup", handlers.SignUpHandler).Methods("POST")
 	r.HandleFunc("/auth/signin", handlers.SignInHandler).Methods("POST")
 
 	http.Handle("/", r)
-	fmt.Println("Server is listening on port 8080...")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Server is listening on port: ", s.listenPort)
+	http.ListenAndServe(s.listenPort, nil)
 }

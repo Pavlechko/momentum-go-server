@@ -20,6 +20,7 @@ func SetupRoutes() {
 	})
 
 	r.HandleFunc("/auth/signup", handlers.SignUpHandler).Methods("POST")
+	r.HandleFunc("/auth/signin", handlers.SignInHandler).Methods("POST")
 
 	http.Handle("/", r)
 	fmt.Println("Server is listening on port 8080...")

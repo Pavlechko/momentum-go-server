@@ -5,7 +5,6 @@ import (
 	"log"
 	"momentum-go-server/internal/models"
 	"os"
-	"strings"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -58,7 +57,7 @@ func CreateUser(user models.UserInput) *models.UserResponse {
 
 		result := DB.Create(&newUser)
 
-		if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key value violates unique") {
+		if result.Error != nil {
 			fmt.Println("User with that name already exists")
 		} else if result.Error != nil {
 			fmt.Println("Error: " + result.Error.Error())
@@ -74,23 +73,26 @@ func CreateUser(user models.UserInput) *models.UserResponse {
 	return userResponse
 }
 
-func GetUser() {
-	// var payload *models.SignUpInput
-	var user models.User
-	mockName := "Test1"
-	result := DB.Find(&user, "name = ?", mockName)
+func GetUser(user models.UserInput) *models.UserResponse {
+	var userModel models.User
+
+	result := DB.Find(&userModel, "name = ?", user.Name)
 
 	if result.Error != nil || result.RowsAffected == 0 {
 		fmt.Println("Invalid name")
+	} else if result.RowsAffected == 1 {
+		userResponse := &models.UserResponse{
+			ID:        userModel.ID,
+			Name:      userModel.Name,
+			CreatedAt: userModel.CreatedAt,
+			UpdatedAt: userModel.UpdatedAt,
+		}
+		return userResponse
 	}
-
-	userResponse := &models.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	return &models.UserResponse{
+		ID:        userModel.ID,
+		Name:      userModel.Name,
+		CreatedAt: userModel.CreatedAt,
+		UpdatedAt: userModel.UpdatedAt,
 	}
-
-	fmt.Println(userResponse)
-
 }

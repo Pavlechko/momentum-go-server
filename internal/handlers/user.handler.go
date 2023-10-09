@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/store"
 	"net/http"
@@ -10,13 +9,15 @@ import (
 func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.UserInput
 
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+	if !IsDecodeJSONRequest(w, r, &user) {
 		return
 	}
 
-	result := store.CreateUser(user) // call service
+	result, err := store.CreateUser(user) // call service
+
+	if err != nil {
+		WriteJSON(w, http.StatusConflict, err.Error())
+	}
 
 	WriteJSON(w, http.StatusOK, result)
 }
@@ -24,13 +25,15 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.UserInput
 
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+	if !IsDecodeJSONRequest(w, r, &user) {
 		return
 	}
 
-	result := store.GetUser(user)
+	result, err := store.GetUser(user) // call service
+
+	if err != nil {
+		WriteJSON(w, http.StatusUnauthorized, err.Error())
+	}
 
 	WriteJSON(w, http.StatusOK, result)
 }

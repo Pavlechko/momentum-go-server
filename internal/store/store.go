@@ -37,8 +37,12 @@ func ContentDB() {
 }
 
 // Creates a record of a new user in the database if his name is unique
-func CreateUser(user models.UserInput) *models.UserResponse {
+func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 	var userModel models.User
+
+	if isEntityExist(userModel, user.Name) {
+		return &models.UserResponse{}, fmt.Errorf("user with name: %v already exists", user.Name)
+	}
 
 	now := time.Now()
 
@@ -49,19 +53,10 @@ func CreateUser(user models.UserInput) *models.UserResponse {
 		UpdatedAt:    now,
 	}
 
-	userExist := DB.Find(&userModel, "name = ?", newUser.Name)
+	result := DB.Create(&newUser)
 
-	if userExist.RowsAffected == 1 {
-		fmt.Println("User with that name already exists")
-	} else {
-
-		result := DB.Create(&newUser)
-
-		if result.Error != nil {
-			fmt.Println("User with that name already exists")
-		} else if result.Error != nil {
-			fmt.Println("Error: " + result.Error.Error())
-		}
+	if result.Error != nil {
+		return &models.UserResponse{}, fmt.Errorf(result.Error.Error())
 	}
 
 	userResponse := &models.UserResponse{
@@ -70,29 +65,35 @@ func CreateUser(user models.UserInput) *models.UserResponse {
 		CreatedAt: newUser.CreatedAt,
 		UpdatedAt: newUser.UpdatedAt,
 	}
-	return userResponse
+	return userResponse, nil
 }
 
-func GetUser(user models.UserInput) *models.UserResponse {
+func GetUser(user models.UserInput) (*models.UserResponse, error) {
 	var userModel models.User
+
+	if !isEntityExist(userModel, user.Name) {
+		return &models.UserResponse{}, fmt.Errorf("user with the name: %v not found", user.Name)
+	}
 
 	result := DB.Find(&userModel, "name = ?", user.Name)
 
-	if result.Error != nil || result.RowsAffected == 0 {
-		fmt.Println("Invalid name")
-	} else if result.RowsAffected == 1 {
-		userResponse := &models.UserResponse{
-			ID:        userModel.ID,
-			Name:      userModel.Name,
-			CreatedAt: userModel.CreatedAt,
-			UpdatedAt: userModel.UpdatedAt,
-		}
-		return userResponse
+	if result.Error != nil {
+		return &models.UserResponse{}, fmt.Errorf(result.Error.Error())
 	}
-	return &models.UserResponse{
+
+	userResponse := &models.UserResponse{
 		ID:        userModel.ID,
 		Name:      userModel.Name,
 		CreatedAt: userModel.CreatedAt,
 		UpdatedAt: userModel.UpdatedAt,
 	}
+	return userResponse, nil
+
+}
+
+func isEntityExist(model models.User, name string) bool {
+
+	entityExist := DB.Find(&model, "name = ?", name)
+
+	return entityExist.RowsAffected == 1
 }

@@ -20,6 +20,14 @@ type UserInput struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
+type UserResponseWithHash struct {
+	ID           uuid.UUID `json:"id,omitempty"`
+	Name         string    `json:"name,omitempty"`
+	Hashpassword string    `json:"hashpassword"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 type UserResponse struct {
 	ID        uuid.UUID `json:"id,omitempty"`
 	Name      string    `json:"name,omitempty"`

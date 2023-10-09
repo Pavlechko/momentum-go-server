@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/services"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := store.CreateUser(user) // call service
+	result, err := services.CreateUser(user)
 
 	if err != nil {
 		WriteJSON(w, http.StatusConflict, err.Error())
@@ -29,7 +29,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := store.GetUser(user) // call service
+	result, err := services.GetUser(user)
 
 	if err != nil {
 		WriteJSON(w, http.StatusUnauthorized, err.Error())

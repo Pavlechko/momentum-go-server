@@ -68,24 +68,25 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 	return userResponse, nil
 }
 
-func GetUser(user models.UserInput) (*models.UserResponse, error) {
+func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 	var userModel models.User
 
 	if !isEntityExist(userModel, user.Name) {
-		return &models.UserResponse{}, fmt.Errorf("user with the name: %v not found", user.Name)
+		return &models.UserResponseWithHash{}, fmt.Errorf("user with the name: %v not found", user.Name)
 	}
 
 	result := DB.Find(&userModel, "name = ?", user.Name)
 
 	if result.Error != nil {
-		return &models.UserResponse{}, fmt.Errorf(result.Error.Error())
+		return &models.UserResponseWithHash{}, fmt.Errorf(result.Error.Error())
 	}
 
-	userResponse := &models.UserResponse{
-		ID:        userModel.ID,
-		Name:      userModel.Name,
-		CreatedAt: userModel.CreatedAt,
-		UpdatedAt: userModel.UpdatedAt,
+	userResponse := &models.UserResponseWithHash{
+		ID:           userModel.ID,
+		Name:         userModel.Name,
+		Hashpassword: userModel.Hashpassword,
+		CreatedAt:    userModel.CreatedAt,
+		UpdatedAt:    userModel.UpdatedAt,
 	}
 	return userResponse, nil
 

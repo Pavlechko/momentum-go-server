@@ -13,13 +13,13 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := services.CreateUser(user)
+	token, err := services.CreateUser(user)
 
 	if err != nil {
-		WriteJSON(w, http.StatusConflict, err.Error())
+		WriteJSONError(w, http.StatusConflict, err.Error())
 	}
 
-	WriteJSON(w, http.StatusOK, result)
+	WriteToken(w, http.StatusOK, token)
 }
 
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,11 +29,11 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := services.GetUser(user)
+	token, err := services.GetUser(user)
 
 	if err != nil {
-		WriteJSON(w, http.StatusUnauthorized, err.Error())
+		WriteJSONError(w, http.StatusUnauthorized, err.Error())
 	}
 
-	WriteJSON(w, http.StatusOK, result)
+	WriteToken(w, http.StatusOK, token)
 }

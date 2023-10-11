@@ -4,61 +4,72 @@ import (
 	"fmt"
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(user models.UserInput) (*models.UserResponse, error) {
+func CreateUser(user models.UserInput) (string, error) {
 
 	err := validateUser(user)
 
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf(err.Error())
+		return "", fmt.Errorf(err.Error())
 	}
 
 	hashPasword, err := hashPassword(user.Password)
 
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf(err.Error())
+		return "", fmt.Errorf(err.Error())
 	}
 
 	user.Password = hashPasword
 
-	result, err := store.CreateUser(user)
+	newUser, err := store.CreateUser(user)
 
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf(err.Error())
+		return "", fmt.Errorf(err.Error())
 	}
 
-	return result, nil
+	token, tokenErr := utils.GenerateJWT(newUser)
+
+	if tokenErr != nil {
+		return "", fmt.Errorf("generation token error: %v", err.Error())
+	}
+
+	return token, nil
 }
 
-func GetUser(user models.UserInput) (*models.UserResponse, error) {
+func GetUser(user models.UserInput) (string, error) {
 	err := validateUser(user)
 
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf(err.Error())
+		return "", fmt.Errorf(err.Error())
 	}
 
 	existUser, err := store.GetUser(user)
 
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf(err.Error())
+		return "", fmt.Errorf(err.Error())
 	}
 
 	err = VerifyPassword(existUser.Hashpassword, user.Password)
 	if err != nil {
-		return &models.UserResponse{}, fmt.Errorf("incorrect password: %v", err.Error())
+		return "", fmt.Errorf("incorrect password or name")
 	}
 
-	result := &models.UserResponse{
-		ID:        existUser.ID,
-		Name:      existUser.Name,
-		CreatedAt: existUser.CreatedAt,
-		UpdatedAt: existUser.UpdatedAt,
+	userData := &models.UserResponse{
+		ID:   existUser.ID,
+		Name: existUser.Name,
 	}
-	return result, nil
 
+	token, tokenErr := utils.GenerateJWT(userData)
+
+	if tokenErr != nil {
+		return "", fmt.Errorf("generation token error: %v", err.Error())
+	}
+
+	return token, nil
 }
 
 func validateUser(user models.UserInput) error {

@@ -60,10 +60,8 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 	}
 
 	userResponse := &models.UserResponse{
-		ID:        newUser.ID,
-		Name:      newUser.Name,
-		CreatedAt: newUser.CreatedAt,
-		UpdatedAt: newUser.UpdatedAt,
+		ID:   newUser.ID,
+		Name: newUser.Name,
 	}
 	return userResponse, nil
 }
@@ -88,8 +86,8 @@ func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 		CreatedAt:    userModel.CreatedAt,
 		UpdatedAt:    userModel.UpdatedAt,
 	}
-	return userResponse, nil
 
+	return userResponse, nil
 }
 
 func isEntityExist(model models.User, name string) bool {

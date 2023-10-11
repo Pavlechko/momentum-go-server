@@ -2,13 +2,23 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
-func WriteJSON(w http.ResponseWriter, status int, d any) error {
+type ErrorMessage struct {
+	Error string
+}
+
+func WriteToken(w http.ResponseWriter, status int, token string) {
+	w.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	w.WriteHeader(status)
+}
+
+func WriteJSONError(w http.ResponseWriter, status int, d string) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(d)
+	return json.NewEncoder(w).Encode(ErrorMessage{Error: d})
 }
 
 func IsDecodeJSONRequest(w http.ResponseWriter, r *http.Request, v interface{}) bool {

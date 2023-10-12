@@ -1,14 +1,14 @@
 package main
 
 import (
+	"momentum-go-server/internal/routes"
 	"momentum-go-server/internal/store"
-	"time"
 )
 
 func main() {
 	store.ContentDB()
-	store.CreateUser()
-	// store.GetUser()
-	// routes.SetupRoutes()
-	time.Sleep(10 * time.Second)
+
+	server := routes.NewAPIServer(":8080")
+	server.Run()
+	// time.Sleep(10 * time.Second)
 }

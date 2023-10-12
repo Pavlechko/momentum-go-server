@@ -5,7 +5,6 @@ import (
 	"log"
 	"momentum-go-server/internal/models"
 	"os"
-	"strings"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -37,59 +36,63 @@ func ContentDB() {
 	DB.AutoMigrate(&models.User{})
 }
 
-func CreateUser() {
-	// var payload *models.SignUpInput
-	var user models.User
+// Creates a record of a new user in the database if his name is unique
+func CreateUser(user models.UserInput) (*models.UserResponse, error) {
+	var userModel models.User
+
+	if isEntityExist(userModel, user.Name) {
+		return &models.UserResponse{}, fmt.Errorf("user with name: %v already exists", user.Name)
+	}
+
 	now := time.Now()
 
 	newUser := models.User{
-		Name:         "Serhii", // payload.Name
-		Hashpassword: "123456", // hashedPassword
+		Name:         user.Name,
+		Hashpassword: user.Password,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
 
-	userExist := DB.Find(&user, "name = ?", newUser.Name)
+	result := DB.Create(&newUser)
 
-	if userExist.RowsAffected == 1 {
-		fmt.Println("User with that name already exists")
-	} else {
-
-		result := DB.Create(&newUser)
-
-		if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key value violates unique") {
-			fmt.Println("User with that name already exists")
-		} else if result.Error != nil {
-			fmt.Println("Error: " + result.Error.Error())
-		}
+	if result.Error != nil {
+		return &models.UserResponse{}, fmt.Errorf(result.Error.Error())
 	}
 
 	userResponse := &models.UserResponse{
-		ID:        newUser.ID,
-		Name:      newUser.Name,
-		CreatedAt: newUser.CreatedAt,
-		UpdatedAt: newUser.UpdatedAt,
+		ID:   newUser.ID,
+		Name: newUser.Name,
 	}
-	fmt.Println(userResponse)
+	return userResponse, nil
 }
 
-func GetUser() {
-	// var payload *models.SignUpInput
-	var user models.User
-	mockName := "Test1"
-	result := DB.Find(&user, "name = ?", mockName)
+func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
+	var userModel models.User
 
-	if result.Error != nil || result.RowsAffected == 0 {
-		fmt.Println("Invalid name")
+	if !isEntityExist(userModel, user.Name) {
+		return &models.UserResponseWithHash{}, fmt.Errorf("user with the name: %v not found", user.Name)
 	}
 
-	userResponse := &models.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	result := DB.Find(&userModel, "name = ?", user.Name)
+
+	if result.Error != nil {
+		return &models.UserResponseWithHash{}, fmt.Errorf(result.Error.Error())
 	}
 
-	fmt.Println(userResponse)
+	userResponse := &models.UserResponseWithHash{
+		ID:           userModel.ID,
+		Name:         userModel.Name,
+		Hashpassword: userModel.Hashpassword,
+		CreatedAt:    userModel.CreatedAt,
+		UpdatedAt:    userModel.UpdatedAt,
+	}
 
+	return userResponse, nil
+}
+
+func isEntityExist(model models.User, name string) bool {
+
+	entityExist := DB.Find(&model, "name = ?", name)
+
+	return entityExist.RowsAffected == 1
 }

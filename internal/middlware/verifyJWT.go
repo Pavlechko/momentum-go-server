@@ -1,7 +1,7 @@
 package middlware
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -17,9 +17,8 @@ func VerifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) htt
 			authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 
 			if len(authHeader) != 2 {
-				fmt.Println("Malformed token")
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte("Malformed Token"))
+				log.Println("20 line in verify JWT")
+				handleError(w, "Malformed Token")
 			} else {
 				jwtToken := authHeader[1]
 				parsedToken, err := jwt.Parse(jwtToken, func(t *jwt.Token) (interface{}, error) {
@@ -35,54 +34,37 @@ func VerifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) htt
 					return []byte(os.Getenv("API_SECRET")), nil
 				})
 
-				fmt.Println("Header", parsedToken.Header, "Claims", parsedToken.Claims, "IsValid: ", parsedToken.Valid)
-
 				if err != nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					_, err2 := w.Write([]byte("You're Unauthorized due to error parsing the JWT"))
-					if err2 != nil {
-						return
-					}
+					handleError(w, "You're Unauthorized due to error parsing the JWT ")
 				}
-				// TO-DO
-				// check the time of life
+
 				claims, ok := parsedToken.Claims.(jwt.MapClaims)
 				if ok {
 					expirationTime := time.Unix(int64(claims["exp"].(float64)), 0)
-					if expirationTime.After(time.Now()) {
-						fmt.Println("Token is valid and not expired.")
-					} else {
-						w.WriteHeader(http.StatusUnauthorized)
-						_, err := w.Write([]byte("Token is expired."))
-						if err != nil {
-							return
-						}
+					if !expirationTime.After(time.Now()) {
+						handleError(w, "Token is expired")
 					}
 				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					_, err := w.Write([]byte("Invalid token claims."))
-					if err != nil {
-						return
-					}
+					handleError(w, "Invalid token claims")
 				}
 
 				if parsedToken.Valid {
 					endpointHandler(w, r)
 				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-					_, err := w.Write([]byte("You're Unauthorized due to invalid token"))
-					if err != nil {
-						return
-					}
+					handleError(w, "You're Unauthorized due to invalid token")
 				}
 			}
 
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			_, err := w.Write([]byte("You're Unauthorized due to No token in the header"))
-			if err != nil {
-				return
-			}
+			handleError(w, "You're Unauthorized due to No token in the header")
 		}
+	}
+}
+
+func handleError(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusUnauthorized)
+	_, err := w.Write([]byte(message))
+	if err != nil {
+		return
 	}
 }

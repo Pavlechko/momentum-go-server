@@ -33,8 +33,6 @@ func (s *APIServer) Run() {
 	originsOk := h.AllowedOrigins([]string{"*"})
 	methodsOk := h.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT"})
 
-	// start server listen
-	// with error handling
 	http.Handle("/", r)
 	fmt.Println("Server is listening on port: ", s.listenPort)
 	http.ListenAndServe(s.listenPort, h.CORS(originsOk, headersOk, methodsOk)(r))

@@ -21,6 +21,12 @@ func WriteJSONError(w http.ResponseWriter, status int, d string) error {
 	return json.NewEncoder(w).Encode(ErrorMessage{Error: d})
 }
 
+func WriteJSON(w http.ResponseWriter, status int, d any) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(d)
+}
+
 func IsDecodeJSONRequest(w http.ResponseWriter, r *http.Request, v interface{}) bool {
 	err := json.NewDecoder(r.Body).Decode(v)
 	if err != nil {

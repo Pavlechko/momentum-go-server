@@ -29,11 +29,12 @@ func (s *APIServer) Run() {
 	r.HandleFunc("/auth/signin", handlers.SignInHandler).Methods("POST")
 	r.HandleFunc("/", middlware.VerifyJWT(handlers.Home)).Methods("GET")
 
-	headersOk := h.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"})
-	originsOk := h.AllowedOrigins([]string{"*"})
+	headersOk := h.AllowedHeaders([]string{"Authorization", "Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"})
+	originsOk := h.AllowedOrigins([]string{"http://localhost:3000"})
 	methodsOk := h.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT"})
+	exposedHeadersOk := h.ExposedHeaders([]string{"Authorization", "Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"})
 
 	http.Handle("/", r)
 	fmt.Println("Server is listening on port: ", s.listenPort)
-	http.ListenAndServe(s.listenPort, h.CORS(originsOk, headersOk, methodsOk)(r))
+	http.ListenAndServe(s.listenPort, h.CORS(originsOk, headersOk, methodsOk, exposedHeadersOk)(r))
 }

@@ -1,5 +1,10 @@
 package models
 
+type WeatherData struct {
+	OpenWeather     FrontendWeatherResponse
+	TomorrowWeather FrontendWeatherResponse
+}
+
 type WeatherFild struct {
 	Main        string `json:"main"`
 	Description string `json:"description"`
@@ -13,7 +18,8 @@ type OpenWeatherResponse struct {
 		Humidity  int     `json:"humidity"`
 	} `json:"main"`
 	Wind struct {
-		Speed float64 `json:"speed"`
+		Speed     float64 `json:"speed"`
+		Direction float64 `json:"deg"`
 	} `json:"wind"`
 	Clouds struct {
 		All int `json:"all"`
@@ -47,11 +53,9 @@ type FrontendWeatherResponse struct {
 	Temp       float64 `json:"temp"`
 	FeelsLike  float64 `json:"feels_like"`
 	Humidity   int     `json:"humidity"`
-	WindSpeed  float64 `json:"wind_speed"`
+	WindSpeed  string  `json:"wind_speed"`
 	WeaterMain string  `json:"main"`
-	// WeaterDescription string  `json:"description"`
-	WeaterIcon string `json:"icon"`
-	// Country           string  `json:"country"`
-	City   string `json:"city"`
-	Sourse string `json:"source"`
+	WeaterIcon string  `json:"icon"`
+	City       string  `json:"city"`
+	Sourse     string  `json:"source"`
 }

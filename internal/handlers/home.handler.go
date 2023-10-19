@@ -6,31 +6,20 @@ import (
 	"net/http"
 )
 
-type WeatherData struct {
-	OpenWeather     models.FrontendWeatherResponse
-	TomorrowWeather models.FrontendWeatherResponse
-}
-
 type ExchangeData struct {
 	Name string
 }
 
 type ResponseObj struct {
-	Weather WeatherData
+	Weather models.WeatherData
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
 
-	openWeatherRes := services.GetOpenWeatherData()
-	tomorrowWeatherRes := services.GetTomorrowWeatherData()
-
-	Weather := WeatherData{
-		OpenWeather:     openWeatherRes,
-		TomorrowWeather: tomorrowWeatherRes,
-	}
+	WeatherRes := services.GetWeatherData()
 
 	Response := ResponseObj{
-		Weather: Weather,
+		Weather: WeatherRes,
 	}
 
 	WriteJSON(w, http.StatusOK, Response)

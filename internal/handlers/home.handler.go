@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/services"
 	"net/http"
 )
 
 type WeatherData struct {
-	Name string
+	OpenWeather     models.FrontendWeatherResponse
+	TomorrowWeather models.FrontendWeatherResponse
 }
 
 type ExchangeData struct {
@@ -13,22 +16,22 @@ type ExchangeData struct {
 }
 
 type ResponseObj struct {
-	Weather  WeatherData
-	Exchange ExchangeData
-}
-
-var Weather = WeatherData{
-	Name: "Weather",
-}
-var Ex = ExchangeData{
-	Name: "Exchange",
+	Weather WeatherData
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
 
-	mockResponse := ResponseObj{
-		Weather:  Weather,
-		Exchange: Ex,
+	openWeatherRes := services.GetOpenWeatherData()
+	tomorrowWeatherRes := services.GetTomorrowWeatherData()
+
+	Weather := WeatherData{
+		OpenWeather:     openWeatherRes,
+		TomorrowWeather: tomorrowWeatherRes,
 	}
-	WriteJSON(w, http.StatusOK, mockResponse)
+
+	Response := ResponseObj{
+		Weather: Weather,
+	}
+
+	WriteJSON(w, http.StatusOK, Response)
 }

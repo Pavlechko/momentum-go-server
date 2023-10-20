@@ -40,8 +40,8 @@ type TomorrowWeatherResponse struct {
 			WindSpeed           float64 `json:"windSpeed"`
 			WindDirection       float64 `json:"windDirection"`
 			CloudCover          int     `json:"cloudCover"`
-			RainIntensity       int     `json:"rainIntensity"`
-			SnowIntensity       int     `json:"snowIntensity"`
+			RainIntensity       float64 `json:"rainIntensity"`
+			SnowIntensity       float64 `json:"snowIntensity"`
 		} `json:"values"`
 	} `json:"data"`
 	Location struct {

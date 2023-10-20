@@ -12,14 +12,17 @@ type ExchangeData struct {
 
 type ResponseObj struct {
 	Weather models.WeatherData
+	Quote   models.QuoteResponse
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
 
 	WeatherRes := services.GetWeatherData()
+	QuoteRes := services.GetRandomQuote()
 
 	Response := ResponseObj{
 		Weather: WeatherRes,
+		Quote:   QuoteRes,
 	}
 
 	WriteJSON(w, http.StatusOK, Response)

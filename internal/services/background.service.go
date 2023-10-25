@@ -13,7 +13,20 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
+func GetBackgroundData() models.BackgroundData {
+
+	pexelsRes := getPexelsBackgroundImage()
+	unsplashRes := getUnsplashBackgroundImage()
+
+	Backgrounds := models.BackgroundData{
+		Pexels:   pexelsRes,
+		Unsplash: unsplashRes,
+	}
+
+	return Backgrounds
+}
+
+func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	var response models.PexelsImageResponse
 
 	client := &http.Client{}
@@ -47,8 +60,45 @@ func GetPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 		Photographer: response.Photos[0].Photographer,
 		Image:        response.Photos[0].Image.Original,
 		Alt:          response.Photos[0].Alt,
-		Sourse:       "pexels.com",
-		SourseUrl:    response.Photos[0].SourseUrl,
+		Source:       "pexels.com",
+		SourceUrl:    response.Photos[0].SourseUrl,
+	}
+	return frontendResponse
+}
+
+func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
+	var response models.UnsplashImageResponse
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "https://api.unsplash.com/photos/random?query=nature&orientation=landscape", nil)
+	if err != nil {
+		log.Println("Error creating HTTP request:", err)
+	}
+
+	req.Header.Add("Accept-Version", "v1")
+	req.Header.Add("Authorization", os.Getenv("UNSPLASH_BACKGROUND_IMAGE"))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error sending HTTP request:", err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading HTTP response body:", err)
+	}
+
+	json.Unmarshal([]byte(body), &response)
+
+	frontendResponse := models.FrontendBackgroundImageResponse{
+		Photographer: response.Photographer.Name,
+		Image:        response.Image.Regular,
+		Alt:          response.Alt,
+		Source:       "unsplash.com",
+		SourceUrl:    response.SourceUrl.Image,
 	}
 	return frontendResponse
 }

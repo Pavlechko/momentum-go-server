@@ -77,7 +77,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	}
 
 	req.Header.Add("Accept-Version", "v1")
-	req.Header.Add("Authorization", os.Getenv("UNSPLASH_BACKGROUND_IMAGE"))
+	req.Header.Add("Authorization", "Client-ID "+os.Getenv("UNSPLASH_BACKGROUND_IMAGE"))
 
 	resp, err := client.Do(req)
 	if err != nil {

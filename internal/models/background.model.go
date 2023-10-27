@@ -18,7 +18,7 @@ type SourceUrl struct {
 }
 
 type Photographer struct {
-	Name string `json:"username"`
+	Name string `json:"name"`
 }
 
 type PexelsPhoto struct {

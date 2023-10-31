@@ -54,7 +54,7 @@ func getOpenWeatherData() models.FrontendWeatherResponse {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
@@ -87,7 +87,7 @@ func getTomorrowWeatherData() models.FrontendWeatherResponse {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
@@ -97,34 +97,34 @@ func getTomorrowWeatherData() models.FrontendWeatherResponse {
 
 	direction := getWindDirection(response.Data.Values.WindSpeed, response.Data.Values.WindDirection)
 
-	if response.Data.Values.RainIntensity == 0 && response.Data.Values.SnowIntensity == 0 && (response.Data.Values.CloudCover >= 0 && response.Data.Values.CloudCover <= 25) {
+	if response.Data.Values.RainIntensity <= 0.1 && response.Data.Values.SnowIntensity <= 0.1 && (response.Data.Values.CloudCover >= 0 && response.Data.Values.CloudCover <= 25) {
 		weaterIcon = "01d"
 		weaterMain = "Clear"
-	} else if response.Data.Values.RainIntensity == 0 && response.Data.Values.SnowIntensity == 0 && (response.Data.Values.CloudCover >= 26 && response.Data.Values.CloudCover <= 50) {
+	} else if response.Data.Values.RainIntensity <= 0.1 && response.Data.Values.SnowIntensity <= 0.1 && (response.Data.Values.CloudCover >= 26 && response.Data.Values.CloudCover <= 50) {
 		weaterIcon = "02d"
 		weaterMain = "Mostly sunny"
-	} else if response.Data.Values.RainIntensity == 0 && response.Data.Values.SnowIntensity == 0 && (response.Data.Values.CloudCover >= 51 && response.Data.Values.CloudCover <= 75) {
+	} else if response.Data.Values.RainIntensity <= 0.1 && response.Data.Values.SnowIntensity <= 0.1 && (response.Data.Values.CloudCover >= 51 && response.Data.Values.CloudCover <= 75) {
 		weaterIcon = "03d"
 		weaterMain = "Mostly cloudy"
-	} else if response.Data.Values.RainIntensity == 0 && response.Data.Values.SnowIntensity == 0 && (response.Data.Values.CloudCover >= 76 && response.Data.Values.CloudCover <= 100) {
+	} else if response.Data.Values.RainIntensity <= 0.1 && response.Data.Values.SnowIntensity <= 0.1 && (response.Data.Values.CloudCover >= 76 && response.Data.Values.CloudCover <= 100) {
 		weaterIcon = "04d"
 		weaterMain = "Clouds"
-	} else if response.Data.Values.RainIntensity == 1 || response.Data.Values.RainIntensity == 2 {
+	} else if response.Data.Values.RainIntensity >= 0.1 && response.Data.Values.RainIntensity <= 2 {
 		weaterIcon = "10d"
 		weaterMain = "Light rain"
-	} else if response.Data.Values.RainIntensity >= 3 && response.Data.Values.RainIntensity <= 6 {
+	} else if response.Data.Values.RainIntensity >= 2.1 && response.Data.Values.RainIntensity <= 6 {
 		weaterIcon = "09d"
 		weaterMain = "Havy rain"
-	} else if response.Data.Values.RainIntensity == 7 {
+	} else if response.Data.Values.RainIntensity >= 6.1 {
 		weaterIcon = "11d"
 		weaterMain = "Thunderstorm"
-	} else if response.Data.Values.SnowIntensity == 1 || response.Data.Values.SnowIntensity == 2 {
+	} else if response.Data.Values.SnowIntensity >= 0.1 && response.Data.Values.SnowIntensity <= 2 {
 		weaterIcon = "13d"
 		weaterMain = "Light snow"
-	} else if response.Data.Values.SnowIntensity >= 3 && response.Data.Values.SnowIntensity <= 6 {
+	} else if response.Data.Values.SnowIntensity >= 2.1 && response.Data.Values.SnowIntensity <= 6 {
 		weaterIcon = "13d"
 		weaterMain = "Havy snow"
-	} else if response.Data.Values.SnowIntensity == 7 {
+	} else if response.Data.Values.SnowIntensity >= 6.1 {
 		weaterIcon = "13d"
 		weaterMain = "Blizzard"
 	}

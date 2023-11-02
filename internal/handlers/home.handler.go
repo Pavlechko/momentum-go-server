@@ -22,7 +22,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	WeatherRes := services.GetWeatherData()
 	QuoteRes := services.GetRandomQuote()
 	BackgroundRes := services.GetBackgroundData()
-	ExchangeRes := services.GetNBUExchange()
+	ExchangeRes := services.GetExchange()
 
 	Response := ResponseObj{
 		Weather:    WeatherRes,

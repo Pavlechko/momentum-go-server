@@ -27,6 +27,7 @@ func getNBUData(date string) []models.NBU {
 
 	if err != nil {
 		log.Println("Error creating HTTP request:", err)
+		return response
 	}
 	defer resp.Body.Close()
 
@@ -34,6 +35,7 @@ func getNBUData(date string) []models.NBU {
 
 	if err != nil {
 		log.Println("Error reading HTTP response body:", err)
+		return response
 	}
 	json.Unmarshal([]byte(body), &response)
 

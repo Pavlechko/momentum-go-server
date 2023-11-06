@@ -28,6 +28,7 @@ func GetBackgroundData() models.BackgroundData {
 
 func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	var response models.PexelsImageResponse
+	var frontendResponse models.FrontendBackgroundImageResponse
 
 	client := &http.Client{}
 
@@ -38,6 +39,7 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		log.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
 
 	req.Header.Add("Authorization", os.Getenv("PEXELS_BACKGROUND_IMAGE"))
@@ -45,6 +47,7 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error sending HTTP request:", err)
+		return frontendResponse
 	}
 
 	defer resp.Body.Close()
@@ -52,11 +55,12 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading HTTP response body:", err)
+		return frontendResponse
 	}
 
 	json.Unmarshal([]byte(body), &response)
 
-	frontendResponse := models.FrontendBackgroundImageResponse{
+	frontendResponse = models.FrontendBackgroundImageResponse{
 		Photographer: response.Photos[0].Photographer,
 		Image:        response.Photos[0].Image.Original,
 		Alt:          response.Photos[0].Alt,
@@ -68,12 +72,14 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 
 func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	var response models.UnsplashImageResponse
+	var frontendResponse models.FrontendBackgroundImageResponse
 
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", "https://api.unsplash.com/photos/random?query=nature&orientation=landscape", nil)
 	if err != nil {
 		log.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
 
 	req.Header.Add("Accept-Version", "v1")
@@ -82,6 +88,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error sending HTTP request:", err)
+		return frontendResponse
 	}
 
 	defer resp.Body.Close()
@@ -89,11 +96,12 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading HTTP response body:", err)
+		return frontendResponse
 	}
 
 	json.Unmarshal([]byte(body), &response)
 
-	frontendResponse := models.FrontendBackgroundImageResponse{
+	frontendResponse = models.FrontendBackgroundImageResponse{
 		Photographer: response.Photographer.Name,
 		Image:        response.Image.Regular,
 		Alt:          response.Alt,

@@ -48,23 +48,26 @@ func getWindDirection(windSpeed, rawDirect float64) string {
 
 func getOpenWeatherData() models.FrontendWeatherResponse {
 	var response models.OpenWeatherResponse
+	var frontendResponse models.FrontendWeatherResponse
 
 	resp, err := http.Get("https://api.openweathermap.org/data/2.5/weather?q=kyiv&units=metric&appid=" + os.Getenv("OPEN_WEATHER_API"))
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("Error reading HTTP response body:", err)
+		return frontendResponse
 	}
 	json.Unmarshal([]byte(body), &response)
 
 	direction := getWindDirection(response.Wind.Speed, response.Wind.Direction)
 
-	frontendResponse := models.FrontendWeatherResponse{
+	frontendResponse = models.FrontendWeatherResponse{
 		Temp:       response.Main.Temp,
 		FeelsLike:  response.Main.FeelsLike,
 		Humidity:   response.Main.Humidity,
@@ -79,19 +82,22 @@ func getOpenWeatherData() models.FrontendWeatherResponse {
 
 func getTomorrowWeatherData() models.FrontendWeatherResponse {
 	var response models.TomorrowWeatherResponse
+	var frontendResponse models.FrontendWeatherResponse
 	var weaterIcon string
 	var weaterMain string
 
 	resp, err := http.Get("https://api.tomorrow.io/v4/weather/realtime?location=kyiv&apikey=" + os.Getenv("TOMORROW_WEATHER_API"))
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("Error reading HTTP response body:", err)
+		return frontendResponse
 	}
 	json.Unmarshal([]byte(body), &response)
 
@@ -129,7 +135,7 @@ func getTomorrowWeatherData() models.FrontendWeatherResponse {
 		weaterMain = "Blizzard"
 	}
 
-	frontendResponse := models.FrontendWeatherResponse{
+	frontendResponse = models.FrontendWeatherResponse{
 		Temp:       response.Data.Values.Temperature,
 		FeelsLike:  response.Data.Values.TemperatureApparent,
 		Humidity:   response.Data.Values.Humidity,

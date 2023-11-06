@@ -9,6 +9,7 @@ import (
 
 	"momentum-go-server/internal/handlers"
 	"momentum-go-server/internal/middlware"
+	"momentum-go-server/internal/utils"
 )
 
 type APIServer struct {
@@ -36,5 +37,6 @@ func (s *APIServer) Run() {
 
 	http.Handle("/", r)
 	fmt.Println("Server is listening on port: ", s.listenPort)
+	utils.InfoLogger.Println("Server is listening on port: ", s.listenPort)
 	http.ListenAndServe(s.listenPort, h.CORS(originsOk, headersOk, methodsOk, exposedHeadersOk)(r))
 }

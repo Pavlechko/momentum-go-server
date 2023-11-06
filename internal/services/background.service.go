@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 
@@ -38,7 +38,7 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
 	}
 
@@ -46,7 +46,7 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error sending HTTP request:", err)
+		utils.ErrorLogger.Println("Error sending HTTP request:", err)
 		return frontendResponse
 	}
 
@@ -54,7 +54,7 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return frontendResponse
 	}
 
@@ -78,7 +78,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	req, err := http.NewRequest("GET", "https://api.unsplash.com/photos/random?query=nature&orientation=landscape", nil)
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
 	}
 
@@ -87,7 +87,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error sending HTTP request:", err)
+		utils.ErrorLogger.Println("Error sending HTTP request:", err)
 		return frontendResponse
 	}
 
@@ -95,7 +95,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return frontendResponse
 	}
 

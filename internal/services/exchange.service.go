@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 	"slices"
@@ -27,7 +27,7 @@ func getNBUData(date string) []models.NBU {
 	resp, err := http.Get(apiURL)
 
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return response
 	}
 	defer resp.Body.Close()
@@ -35,7 +35,7 @@ func getNBUData(date string) []models.NBU {
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return response
 	}
 	json.Unmarshal([]byte(body), &response)
@@ -86,21 +86,24 @@ func getLayerExchange() map[string]models.ExchangeFrontendResponse {
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
 
 	req.Header.Set("apikey", os.Getenv("LAYER_EXCHANGE_API"))
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error sending HTTP request:", err)
+		utils.ErrorLogger.Println("Error sending HTTP request:", err)
+		return frontendResponse
 	}
 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
+		return frontendResponse
 	}
 
 	json.Unmarshal([]byte(body), &response)

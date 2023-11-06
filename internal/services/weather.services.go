@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/utils"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -53,14 +53,14 @@ func getOpenWeatherData() models.FrontendWeatherResponse {
 	resp, err := http.Get("https://api.openweathermap.org/data/2.5/weather?q=kyiv&units=metric&appid=" + os.Getenv("OPEN_WEATHER_API"))
 
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return frontendResponse
 	}
 	json.Unmarshal([]byte(body), &response)
@@ -89,14 +89,14 @@ func getTomorrowWeatherData() models.FrontendWeatherResponse {
 	resp, err := http.Get("https://api.tomorrow.io/v4/weather/realtime?location=kyiv&apikey=" + os.Getenv("TOMORROW_WEATHER_API"))
 
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return frontendResponse
 	}
 	json.Unmarshal([]byte(body), &response)

@@ -4,14 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/utils"
 	"net/http"
+	"os"
+	"slices"
+	"strings"
 	"time"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var currentTime = time.Now()
 var yesterday = currentTime.AddDate(0, 0, -1)
+var symbolsArr = []string{"AUD", "BRL", "BTC", "CAD", "CLP", "CNY", "CZK", "EGP", "EUR", "GBP", "HKD", "INR", "JPY", "KRW", "LTL", "LVL", "TRY", "USD", "XAG", "XAU"}
 
 func getNBUData(date string) []models.NBU {
 	var response []models.NBU
@@ -21,7 +27,7 @@ func getNBUData(date string) []models.NBU {
 	resp, err := http.Get(apiURL)
 
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return response
 	}
 	defer resp.Body.Close()
@@ -29,7 +35,7 @@ func getNBUData(date string) []models.NBU {
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println("Error reading HTTP response body:", err)
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return response
 	}
 	json.Unmarshal([]byte(body), &response)
@@ -37,7 +43,12 @@ func getNBUData(date string) []models.NBU {
 	return response
 }
 
-func GetNBUExchange() models.ExchangeRatesResponse {
+func convertArrToString(arr []string) string {
+	str := strings.Join(arr, ",")
+	return str
+}
+
+func getNBUExchange() map[string]models.ExchangeFrontendResponse {
 	frontendResponse := make(map[string]models.ExchangeFrontendResponse)
 
 	yyyymmddNoDash := currentTime.Format("20060102")
@@ -47,9 +58,9 @@ func GetNBUExchange() models.ExchangeRatesResponse {
 	yesterdayData := getNBUData(yyyymmddNoDashPreviousDay)
 
 	for _, nbu := range todayData {
+		isExistRate := slices.Contains(symbolsArr, nbu.Symbol)
 		for _, rate := range yesterdayData {
-			if nbu.Symbol == rate.Symbol {
-
+			if nbu.Symbol == rate.Symbol && isExistRate {
 				frontendResponse[nbu.Symbol] = models.ExchangeFrontendResponse{
 					Change:  rate.Rate - nbu.Rate,
 					EndRate: nbu.Rate,
@@ -57,8 +68,70 @@ func GetNBUExchange() models.ExchangeRatesResponse {
 			}
 		}
 	}
-	NBU := models.ExchangeRatesResponse{
-		NBU: frontendResponse,
+
+	return frontendResponse
+}
+
+func getLayerExchange() map[string]models.ExchangeFrontendResponse {
+	var response models.LayerResponse
+	frontendResponse := make(map[string]models.ExchangeFrontendResponse)
+
+	yyyymmddNoDash := currentTime.Format("2006-01-02")
+	yyyymmddNoDashPreviousDay := yesterday.Format("2006-01-02")
+	symbols := convertArrToString(symbolsArr)
+
+	client := &http.Client{}
+
+	apiURL := fmt.Sprintf("https://api.apilayer.com/exchangerates_data/fluctuation?base=UAH&start_date=%s&end_date=%s&symbols=%s", yyyymmddNoDashPreviousDay, yyyymmddNoDash, symbols)
+
+	req, err := http.NewRequest("GET", apiURL, nil)
+	if err != nil {
+		utils.ErrorLogger.Println("Error creating HTTP request:", err)
+		return frontendResponse
 	}
-	return NBU
+
+	req.Header.Set("apikey", os.Getenv("LAYER_EXCHANGE_API"))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		utils.ErrorLogger.Println("Error sending HTTP request:", err)
+		return frontendResponse
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
+		return frontendResponse
+	}
+
+	json.Unmarshal([]byte(body), &response)
+
+	for key, rate := range response.Rates {
+		var todayRate float64
+		if rate.EndRate != 0 {
+			todayRate = 1 / rate.EndRate
+		} else {
+			todayRate = rate.EndRate
+		}
+		frontendResponse[key] = models.ExchangeFrontendResponse{
+			Change:  rate.Change,
+			EndRate: todayRate,
+		}
+	}
+
+	return frontendResponse
+}
+
+func GetExchange() models.ExchangeRatesResponse {
+	NBU := getNBUExchange()
+	Layer := getLayerExchange()
+
+	Exchange := models.ExchangeRatesResponse{
+		NBU:   NBU,
+		Layer: Layer,
+	}
+
+	return Exchange
 }

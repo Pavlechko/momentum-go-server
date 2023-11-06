@@ -8,6 +8,7 @@ import (
 	"momentum-go-server/internal/models"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -42,15 +43,6 @@ func getNBUData(date string) []models.NBU {
 	return response
 }
 
-func isExistItemInArray(arr []string, item string) bool {
-	for i := 0; i < len(arr); i++ {
-		if arr[i] == item {
-			return true
-		}
-	}
-	return false
-}
-
 func convertArrToString(arr []string) string {
 	str := strings.Join(arr, ",")
 	return str
@@ -66,7 +58,7 @@ func getNBUExchange() map[string]models.ExchangeFrontendResponse {
 	yesterdayData := getNBUData(yyyymmddNoDashPreviousDay)
 
 	for _, nbu := range todayData {
-		isExistRate := isExistItemInArray(symbolsArr, nbu.Symbol)
+		isExistRate := slices.Contains(symbolsArr, nbu.Symbol)
 		for _, rate := range yesterdayData {
 			if nbu.Symbol == rate.Symbol && isExistRate {
 				frontendResponse[nbu.Symbol] = models.ExchangeFrontendResponse{

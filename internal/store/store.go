@@ -181,13 +181,34 @@ func GetSettings(id uuid.UUID) {
 func UpdateSetting(id uuid.UUID, name SettingType, v map[string]string) {
 	var setting models.Setting
 
-	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
-	if result.Error != nil {
-		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
+	tx := DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		utils.ErrorLogger.Println("Error creating the transaction:", err)
 		return
 	}
 
-	setting = models.Setting{
-		Value: v,
+	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	if result.Error != nil {
+		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
+		tx.Rollback()
+		return
+	}
+
+	result = DB.Model(&setting).Updates(models.Setting{Value: v})
+	if result.Error != nil {
+		utils.ErrorLogger.Println("Error update setting:", result.Error.Error())
+		tx.Rollback()
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		utils.ErrorLogger.Println("Error transaction commit :", err)
+		return
 	}
 }

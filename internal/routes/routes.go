@@ -29,6 +29,7 @@ func (s *APIServer) Run() {
 	r.HandleFunc("/auth/signup", handlers.SignUpHandler).Methods("POST")
 	r.HandleFunc("/auth/signin", handlers.SignInHandler).Methods("POST")
 	r.HandleFunc("/", middlware.VerifyJWT(handlers.Home)).Methods("GET")
+	r.HandleFunc("/setting/{type}", middlware.VerifyJWT(handlers.UpdateSettings)).Methods("PUT")
 
 	headersOk := h.AllowedHeaders([]string{"Authorization", "Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"})
 	originsOk := h.AllowedOrigins([]string{"http://localhost:3000"})

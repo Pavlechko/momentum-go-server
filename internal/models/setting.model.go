@@ -9,6 +9,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type SettingType string
+
+const (
+	Weather    SettingType = "Weather"
+	Quote      SettingType = "Quote"
+	Market     SettingType = "Market"
+	Exchange   SettingType = "Exchange"
+	Background SettingType = "Background"
+)
+
 type ValueMap map[string]string
 
 type Setting struct {

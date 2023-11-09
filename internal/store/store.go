@@ -18,16 +18,6 @@ var DB *gorm.DB
 var err error
 var now = time.Now()
 
-type SettingType string
-
-const (
-	Weather    SettingType = "Weather"
-	Quote      SettingType = "Quote"
-	Market     SettingType = "Market"
-	Exchange   SettingType = "Exchange"
-	Background SettingType = "Background"
-)
-
 func ContentDB() {
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Kyiv",
@@ -119,47 +109,7 @@ func isEntityExist(model models.User, name string) bool {
 
 // Creates a record with default settings for the user
 func createDefaultSettings(id uuid.UUID) {
-	settings := []*models.Setting{
-		{
-			UserID: id,
-			Name:   string(Weather),
-			Value: map[string]string{
-				"source": "OpenWeatherAPI",
-				"city":   "Kyiv",
-			},
-		},
-		{
-			UserID: id,
-			Name:   string(Background),
-			Value: map[string]string{
-				"source": "unsplash.com",
-				"image":  "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDU5Nzd8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTkzNjgxODZ8&ixlib=rb-4.0.3&q=80&w=1080",
-			},
-		},
-		{
-			UserID: id,
-			Name:   string(Quote),
-			Value: map[string]string{
-				"content": "The world makes way for the man who knows where he is going.",
-				"author":  "Ralph Waldo Emerson",
-			},
-		},
-		{
-			UserID: id,
-			Name:   string(Exchange),
-			Value: map[string]string{
-				"source": "NBU",
-				"base":   "UAH",
-			},
-		},
-		{
-			UserID: id,
-			Name:   string(Market),
-			Value: map[string]string{
-				"Symbol": "DAX",
-			},
-		},
-	}
+	settings := utils.GetDefaultSettings(id)
 
 	var result = DB.Create(settings)
 	if result.Error != nil {
@@ -178,7 +128,7 @@ func GetSettings(id uuid.UUID) {
 	}
 }
 
-func UpdateSetting(id uuid.UUID, name SettingType, v map[string]string) {
+func UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error) {
 	var setting models.Setting
 
 	tx := DB.Begin()
@@ -190,25 +140,27 @@ func UpdateSetting(id uuid.UUID, name SettingType, v map[string]string) {
 
 	if err := tx.Error; err != nil {
 		utils.ErrorLogger.Println("Error creating the transaction:", err)
-		return
+		return setting, err
 	}
 
 	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
 		tx.Rollback()
-		return
+		return setting, result.Error
 	}
 
 	result = DB.Model(&setting).Updates(models.Setting{Value: v})
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error update setting:", result.Error.Error())
 		tx.Rollback()
-		return
+		return setting, result.Error
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		utils.ErrorLogger.Println("Error transaction commit :", err)
-		return
+		return setting, result.Error
 	}
+
+	return setting, nil
 }

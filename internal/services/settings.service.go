@@ -26,3 +26,28 @@ func QuoteUpdate(userId string) models.QuoteResponse {
 		Author:  res.Value["author"],
 	}
 }
+
+func BackgroundUpdate(userId string) models.FrontendBackgroundImageResponse {
+	newBackground := GetRandomBackground()
+	id, _ := uuid.Parse(userId)
+	v := map[string]string{
+		"photographer": newBackground.Photographer,
+		"image":        newBackground.Image,
+		"alt":          newBackground.Alt,
+		"source":       newBackground.Source,
+		"source_url":   newBackground.SourceUrl,
+	}
+	res, err := store.UpdateSetting(id, models.Background, v)
+	if err != nil {
+		utils.ErrorLogger.Println("Error updating background settings:", err)
+		return newBackground
+	}
+
+	return models.FrontendBackgroundImageResponse{
+		Photographer: res.Value["photographer"],
+		Image:        res.Value["image"],
+		Alt:          res.Value["alt"],
+		Source:       res.Value["source"],
+		SourceUrl:    res.Value["source_url"],
+	}
+}

@@ -15,13 +15,15 @@ func GetSettings(w http.ResponseWriter, r *http.Request) {
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	utils.InfoLogger.Println("UpdateSettings")
 	userId := utils.GetUserId(r)
-	// services.QuoteUpdate(userId)
 	vars := mux.Vars(r)
 	settingsType := vars["type"]
 
 	switch settingsType {
 	case "quote":
-		nweQuote := services.QuoteUpdate(userId)
-		WriteJSON(w, http.StatusOK, nweQuote)
+		newQuote := services.QuoteUpdate(userId)
+		WriteJSON(w, http.StatusOK, newQuote)
+	case "background":
+		newBackground := services.BackgroundUpdate(userId)
+		WriteJSON(w, http.StatusOK, newBackground)
 	}
 }

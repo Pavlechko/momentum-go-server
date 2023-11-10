@@ -110,3 +110,11 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	}
 	return frontendResponse
 }
+
+func GetRandomBackground() models.FrontendBackgroundImageResponse {
+	randomInt := rand.Intn(2)
+	if randomInt == 1 {
+		return getUnsplashBackgroundImage()
+	}
+	return getPexelsBackgroundImage()
+}

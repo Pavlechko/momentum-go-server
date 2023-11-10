@@ -9,7 +9,7 @@ import (
 type ResponseObj struct {
 	Weather    models.WeatherData
 	Quote      models.QuoteResponse
-	Backgroung models.BackgroundData
+	Backgroung models.FrontendBackgroundImageResponse
 	Exchange   models.ExchangeRatesResponse
 	Market     models.StockMarketResponse
 }

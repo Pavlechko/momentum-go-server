@@ -1,10 +1,5 @@
 package models
 
-type BackgroundData struct {
-	Pexels   FrontendBackgroundImageResponse
-	Unsplash FrontendBackgroundImageResponse
-}
-
 type Src struct {
 	Original string `json:"landscape"`
 }

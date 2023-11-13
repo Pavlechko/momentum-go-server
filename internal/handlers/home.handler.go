@@ -10,7 +10,7 @@ type ResponseObj struct {
 	Weather    models.FrontendWeatherResponse
 	Quote      models.QuoteResponse
 	Backgroung models.FrontendBackgroundImageResponse
-	Exchange   models.ExchangeRatesResponse
+	Exchange   models.ExchangeFrontendResponse
 	Market     models.StockMarketResponse
 }
 

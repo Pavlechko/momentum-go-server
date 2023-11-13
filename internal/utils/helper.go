@@ -43,8 +43,11 @@ func GetDefaultSettings(id uuid.UUID) []*models.Setting {
 			UserID: id,
 			Name:   string(models.Background),
 			Value: map[string]string{
-				"source": "unsplash.com",
-				"image":  "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDU5Nzd8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTkzNjgxODZ8&ixlib=rb-4.0.3&q=80&w=1080",
+				"source":       "unsplash.com",
+				"image":        "https://images.unsplash.com/photo-1465189684280-6a8fa9b19a7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDU5Nzd8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTk2MjA3NDd8&ixlib=rb-4.0.3&q=80&w=1080",
+				"photographer": "Kalen Emsley",
+				"alt":          "body of water surrounding with trees",
+				"source_url":   "https://unsplash.com/photos/body-of-water-surrounding-with-trees-_LuLiJc1cdo",
 			},
 		},
 		{

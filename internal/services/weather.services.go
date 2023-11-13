@@ -13,17 +13,12 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetWeatherData() models.WeatherData {
+func GetWeatherData() models.FrontendWeatherResponse {
+	// make request to DB
+	openWeatherRes := getOpenWeatherData("kyiv")
+	// tomorrowWeatherRes := getTomorrowWeatherData("kyiv")
 
-	openWeatherRes := getOpenWeatherData()
-	tomorrowWeatherRes := getTomorrowWeatherData()
-
-	Weather := models.WeatherData{
-		OpenWeather:     openWeatherRes,
-		TomorrowWeather: tomorrowWeatherRes,
-	}
-
-	return Weather
+	return openWeatherRes
 }
 
 func getWindDirection(windSpeed, rawDirect float64) string {
@@ -46,11 +41,13 @@ func getWindDirection(windSpeed, rawDirect float64) string {
 	}
 }
 
-func getOpenWeatherData() models.FrontendWeatherResponse {
+func getOpenWeatherData(city string) models.FrontendWeatherResponse {
 	var response models.OpenWeatherResponse
 	var frontendResponse models.FrontendWeatherResponse
 
-	resp, err := http.Get("https://api.openweathermap.org/data/2.5/weather?q=kyiv&units=metric&appid=" + os.Getenv("OPEN_WEATHER_API"))
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&appid=", city)
+
+	resp, err := http.Get(url + os.Getenv("OPEN_WEATHER_API"))
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
@@ -74,19 +71,21 @@ func getOpenWeatherData() models.FrontendWeatherResponse {
 		WindSpeed:  direction,
 		WeaterMain: response.Weather[0].Main,
 		WeaterIcon: response.Weather[0].Icon,
-		City:       response.Name + ", " + response.Sys.Country,
-		Sourse:     "OpenWeatherAPI",
+		City:       city,
+		Source:     "OpenWeather",
 	}
 	return frontendResponse
 }
 
-func getTomorrowWeatherData() models.FrontendWeatherResponse {
+func getTomorrowWeatherData(city string) models.FrontendWeatherResponse {
 	var response models.TomorrowWeatherResponse
 	var frontendResponse models.FrontendWeatherResponse
 	var weaterIcon string
 	var weaterMain string
 
-	resp, err := http.Get("https://api.tomorrow.io/v4/weather/realtime?location=kyiv&apikey=" + os.Getenv("TOMORROW_WEATHER_API"))
+	url := fmt.Sprintf("https://api.tomorrow.io/v4/weather/realtime?location=%s&apikey=", city)
+
+	resp, err := http.Get(url + os.Getenv("TOMORROW_WEATHER_API"))
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
@@ -142,8 +141,19 @@ func getTomorrowWeatherData() models.FrontendWeatherResponse {
 		WindSpeed:  direction,
 		WeaterMain: weaterMain,
 		WeaterIcon: weaterIcon,
-		City:       response.Location.Name,
-		Sourse:     "Tomorrow.io API",
+		City:       city,
+		Source:     "TomorrowWeather",
 	}
 	return frontendResponse
+}
+
+func GetNewWeatherData(source, city string) models.FrontendWeatherResponse {
+	var newWeather models.FrontendWeatherResponse
+	switch source {
+	case "OpenWeather":
+		newWeather = getOpenWeatherData(city)
+	case "TomorrowWeather":
+		newWeather = getTomorrowWeatherData(city)
+	}
+	return newWeather
 }

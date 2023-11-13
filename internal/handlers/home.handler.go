@@ -7,7 +7,7 @@ import (
 )
 
 type ResponseObj struct {
-	Weather    models.WeatherData
+	Weather    models.FrontendWeatherResponse
 	Quote      models.QuoteResponse
 	Backgroung models.FrontendBackgroundImageResponse
 	Exchange   models.ExchangeRatesResponse

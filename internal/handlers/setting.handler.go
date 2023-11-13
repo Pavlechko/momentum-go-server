@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/services"
 	"momentum-go-server/internal/utils"
 	"net/http"
@@ -9,11 +10,10 @@ import (
 )
 
 func GetSettings(w http.ResponseWriter, r *http.Request) {
-
+	// TO-DO
 }
 
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
-	utils.InfoLogger.Println("UpdateSettings")
 	userId := utils.GetUserId(r)
 	vars := mux.Vars(r)
 	settingsType := vars["type"]
@@ -25,5 +25,18 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	case "background":
 		newBackground := services.BackgroundUpdate(userId)
 		WriteJSON(w, http.StatusOK, newBackground)
+	case "weather":
+		var weatherInput models.WeatherInput
+		if !IsDecodeJSONRequest(w, r, &weatherInput) {
+			utils.ErrorLogger.Println("Error decoding weather input")
+			return
+		}
+		var (
+			source = weatherInput.Source
+			city   = weatherInput.City
+		)
+
+		newWeather := services.WeatherUpdate(userId, source, city)
+		WriteJSON(w, http.StatusOK, newWeather)
 	}
 }

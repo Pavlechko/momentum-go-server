@@ -51,3 +51,20 @@ func BackgroundUpdate(userId string) models.FrontendBackgroundImageResponse {
 		SourceUrl:    res.Value["source_url"],
 	}
 }
+
+func WeatherUpdate(userId, source, city string) models.FrontendWeatherResponse {
+	newWeather := GetNewWeatherData(source, city)
+	id, _ := uuid.Parse(userId)
+
+	v := map[string]string{
+		"city":   city,
+		"source": source,
+	}
+	_, err := store.UpdateSetting(id, models.Weather, v)
+	if err != nil {
+		utils.ErrorLogger.Println("Error updating weather settings:", err)
+		return newWeather
+	}
+
+	return newWeather
+}

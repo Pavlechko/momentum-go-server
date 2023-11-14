@@ -38,5 +38,18 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 
 		newWeather := services.WeatherUpdate(userId, source, city)
 		WriteJSON(w, http.StatusOK, newWeather)
+	case "exchange":
+		var exchangeInput models.ExchangeInput
+		if !IsDecodeJSONRequest(w, r, &exchangeInput) {
+			utils.ErrorLogger.Println("Error decoding exchange input")
+			return
+		}
+		var (
+			source = exchangeInput.Source
+			from   = exchangeInput.From
+			to     = exchangeInput.To
+		)
+		newExchange := services.ExchangeUpdate(userId, source, from, to)
+		WriteJSON(w, http.StatusOK, newExchange)
 	}
 }

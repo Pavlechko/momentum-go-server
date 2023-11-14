@@ -68,3 +68,19 @@ func WeatherUpdate(userId, source, city string) models.FrontendWeatherResponse {
 
 	return newWeather
 }
+
+func ExchangeUpdate(userId, source, from, to string) models.ExchangeFrontendResponse {
+	newExchange := GetNewExchange(source, from, to)
+	id, _ := uuid.Parse(userId)
+	v := map[string]string{
+		"from":   from,
+		"source": source,
+		"to":     to,
+	}
+	_, err := store.UpdateSetting(id, models.Exchange, v)
+	if err != nil {
+		utils.ErrorLogger.Println("Error updating exchange settings:", err)
+		return newExchange
+	}
+	return newExchange
+}

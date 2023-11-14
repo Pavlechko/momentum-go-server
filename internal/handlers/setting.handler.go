@@ -51,5 +51,16 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		)
 		newExchange := services.ExchangeUpdate(userId, source, from, to)
 		WriteJSON(w, http.StatusOK, newExchange)
+	case "market":
+		var marketInput models.MarketInput
+		if !IsDecodeJSONRequest(w, r, &marketInput) {
+			utils.ErrorLogger.Println("Error decoding market input")
+			return
+		}
+		var (
+			symbol = marketInput.Symbol
+		)
+		newMarket := services.MarketUpdate(userId, symbol)
+		WriteJSON(w, http.StatusOK, newMarket)
 	}
 }

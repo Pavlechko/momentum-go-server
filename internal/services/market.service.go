@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/utils"
@@ -11,11 +12,13 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetMarketData() models.StockMarketResponse {
+func GetMarket(symbol string) models.StockMarketResponse {
 	var response models.StockMarket
 	var frontendResponse models.StockMarketResponse
 
-	resp, err := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=DAX&apikey=" + os.Getenv("STOCK_MARKET_API"))
+	apiURL := fmt.Sprintf("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=", symbol)
+
+	resp, err := http.Get(apiURL + os.Getenv("STOCK_MARKET_API"))
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
@@ -39,4 +42,8 @@ func GetMarketData() models.StockMarketResponse {
 	}
 
 	return frontendResponse
+}
+
+func GetMarketData() models.StockMarketResponse {
+	return GetMarket("DAX")
 }

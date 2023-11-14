@@ -84,3 +84,17 @@ func ExchangeUpdate(userId, source, from, to string) models.ExchangeFrontendResp
 	}
 	return newExchange
 }
+
+func MarketUpdate(userId, symbol string) models.StockMarketResponse {
+	newMarket := GetMarket(symbol)
+	id, _ := uuid.Parse(userId)
+	v := map[string]string{
+		"symbol": symbol,
+	}
+	_, err := store.UpdateSetting(id, models.Market, v)
+	if err != nil {
+		utils.ErrorLogger.Println("Error updating market settings:", err)
+		return newMarket
+	}
+	return newMarket
+}

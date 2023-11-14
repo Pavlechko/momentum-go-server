@@ -20,6 +20,7 @@ var yesterday = currentTime.AddDate(0, 0, -1)
 
 func getNBUData(date, symbol string) models.NBU {
 	var response []models.NBU
+	var currentRate float64
 
 	apiURL := fmt.Sprintf("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=%s&date=%s&json", symbol, date)
 
@@ -42,7 +43,18 @@ func getNBUData(date, symbol string) models.NBU {
 	if err != nil {
 		utils.ErrorLogger.Println("json.Unmarshal response", err)
 	}
-	return response[0]
+
+	if response[0].Rate != 0 {
+		currentRate = 1 / response[0].Rate
+	} else {
+		currentRate = response[0].Rate
+	}
+	var NBURes = models.NBU{
+		Rate:   currentRate,
+		Symbol: response[0].Symbol,
+	}
+
+	return NBURes
 }
 
 func getNBUExchange(symbol string) models.ExchangeFrontendResponse {
@@ -101,15 +113,9 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 	json.Unmarshal([]byte(body), &response)
 
 	for _, rate := range response.Rates {
-		var todayRate float64
-		if rate.EndRate != 0 {
-			todayRate = 1 / rate.EndRate
-		} else {
-			todayRate = rate.EndRate
-		}
 		frontendResponse = models.ExchangeFrontendResponse{
 			Change:  rate.Change,
-			EndRate: todayRate,
+			EndRate: rate.EndRate,
 			From:    from,
 			To:      to,
 			Source:  "Layer",
@@ -121,8 +127,20 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 
 func GetExchange() models.ExchangeFrontendResponse {
 	// make req to DB
-	// NBU := getNBUExchange("USD")
-	Layer := getLayerExchange("UAH", "USD")
 
-	return Layer
+	exchange := GetNewExchange("NBU", "UAH", "USD")
+
+	return exchange
+}
+
+func GetNewExchange(source, from, to string) models.ExchangeFrontendResponse {
+	var newExchange models.ExchangeFrontendResponse
+	switch source {
+	case "NBU":
+		newExchange = getNBUExchange(to)
+	case "Layer":
+		newExchange = getLayerExchange(from, to)
+	}
+
+	return newExchange
 }

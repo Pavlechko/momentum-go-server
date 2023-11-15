@@ -9,7 +9,7 @@ import (
 type ResponseObj struct {
 	Weather    models.FrontendWeatherResponse
 	Quote      models.QuoteResponse
-	Backgroung models.FrontendBackgroundImageResponse
+	Background models.FrontendBackgroundImageResponse
 	Exchange   models.ExchangeFrontendResponse
 	Market     models.StockMarketResponse
 }
@@ -25,7 +25,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	Response := ResponseObj{
 		Weather:    WeatherRes,
 		Quote:      QuoteRes,
-		Backgroung: BackgroundRes,
+		Background: BackgroundRes,
 		Exchange:   ExchangeRes,
 		Market:     MarketRes,
 	}

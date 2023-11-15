@@ -98,3 +98,9 @@ func MarketUpdate(userId, symbol string) models.StockMarketResponse {
 	}
 	return newMarket
 }
+
+func GetSettingData(userId string) models.SettingResponse {
+	id, _ := uuid.Parse(userId)
+	settings := store.GetSettings(id)
+	return settings
+}

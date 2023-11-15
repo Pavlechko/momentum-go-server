@@ -118,14 +118,33 @@ func createDefaultSettings(id uuid.UUID) {
 	}
 }
 
-func GetSettings(id uuid.UUID) {
+func GetSettings(id uuid.UUID) models.SettingResponse {
 	var settingsModel []models.Setting
 
-	result := DB.Where(&settingsModel, "user_id = ?", id)
+	responseMap := make(map[string]models.ValueMap)
+
+	result := DB.Find(&settingsModel, "user_id = ?", id)
+
+	utils.InfoLogger.Println(result)
+	utils.InfoLogger.Println(settingsModel)
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user settings", result.Error.Error())
 	}
+
+	for _, setting := range settingsModel {
+		responseMap[setting.Name] = setting.Value
+	}
+
+	settingRes := models.SettingResponse{
+		Weather:    responseMap["Weather"],
+		Quote:      responseMap["Quote"],
+		Background: responseMap["Background"],
+		Exchange:   responseMap["Exchange"],
+		Market:     responseMap["Market"],
+	}
+
+	return settingRes
 }
 
 func UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error) {

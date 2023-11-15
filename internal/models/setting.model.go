@@ -44,3 +44,11 @@ func (v *ValueMap) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported type: %T", src)
 	}
 }
+
+type SettingResponse struct {
+	Weather    ValueMap
+	Quote      ValueMap
+	Background ValueMap
+	Exchange   ValueMap
+	Market     ValueMap
+}

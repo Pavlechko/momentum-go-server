@@ -23,7 +23,13 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		newQuote := services.QuoteUpdate(userId)
 		WriteJSON(w, http.StatusOK, newQuote)
 	case "background":
-		newBackground := services.BackgroundUpdate(userId)
+		var backgroundInput models.BackgroundInput
+		if !IsDecodeJSONRequest(w, r, &backgroundInput) {
+			utils.ErrorLogger.Println("Error decoding background input")
+			return
+		}
+		var source = backgroundInput.Source
+		newBackground := services.BackgroundUpdate(userId, source)
 		WriteJSON(w, http.StatusOK, newBackground)
 	case "weather":
 		var weatherInput models.WeatherInput

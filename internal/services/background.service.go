@@ -98,9 +98,8 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 	return frontendResponse
 }
 
-func GetRandomBackground() models.FrontendBackgroundImageResponse {
-	randomInt := rand.Intn(2)
-	if randomInt == 1 {
+func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
+	if source == "unsplash.com" {
 		return getUnsplashBackgroundImage()
 	}
 	return getPexelsBackgroundImage()
@@ -109,6 +108,6 @@ func GetRandomBackground() models.FrontendBackgroundImageResponse {
 func GetBackgroundData() models.FrontendBackgroundImageResponse {
 	// TO-DO
 	// Check in the DB how long ago the image was updated and return the new one or retrieve the old one from the DB
-	background := GetRandomBackground()
+	background := GetRandomBackground("unsplash.com")
 	return background
 }

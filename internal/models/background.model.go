@@ -43,3 +43,7 @@ type FrontendBackgroundImageResponse struct {
 	Source       string `json:"source"`
 	SourceUrl    string `json:"source_url"`
 }
+
+type BackgroundInput struct {
+	Source string `json:"source" binding:"required"`
+}

@@ -27,8 +27,8 @@ func QuoteUpdate(userId string) models.QuoteResponse {
 	}
 }
 
-func BackgroundUpdate(userId string) models.FrontendBackgroundImageResponse {
-	newBackground := GetRandomBackground()
+func BackgroundUpdate(userId, source string) models.FrontendBackgroundImageResponse {
+	newBackground := GetRandomBackground(source)
 	id, _ := uuid.Parse(userId)
 	v := map[string]string{
 		"photographer": newBackground.Photographer,

@@ -16,10 +16,9 @@ import (
 var currentTime = time.Now()
 var yesterday = currentTime.AddDate(0, 0, -1)
 
-// var symbolsArr = []string{"AUD", "BRL", "EGP", "CAD", "CLP", "CNY", "CZK", "EGP", "EUR", "GBP", "HKD", "INR", "JPY", "KRW", "LTL", "LVL", "TRY", "USD", "XAG", "XAU", "UAH", "PLN"}
-
 func getNBUData(date, symbol string) models.NBU {
 	var response []models.NBU
+	var NBURes models.NBU
 	var currentRate float64
 
 	apiURL := fmt.Sprintf("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=%s&date=%s&json", symbol, date)
@@ -28,7 +27,7 @@ func getNBUData(date, symbol string) models.NBU {
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
-		return response[0]
+		return NBURes
 	}
 	defer resp.Body.Close()
 
@@ -36,12 +35,18 @@ func getNBUData(date, symbol string) models.NBU {
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
-		return response[0]
+		return NBURes
 	}
 
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
 		utils.ErrorLogger.Println("json.Unmarshal response", err)
+		return NBURes
+	}
+
+	if len(response) == 0 {
+		utils.ErrorLogger.Println("Rresponse is empty")
+		return NBURes
 	}
 
 	if response[0].Rate != 0 {
@@ -49,7 +54,8 @@ func getNBUData(date, symbol string) models.NBU {
 	} else {
 		currentRate = response[0].Rate
 	}
-	var NBURes = models.NBU{
+
+	NBURes = models.NBU{
 		Rate:   currentRate,
 		Symbol: response[0].Symbol,
 	}
@@ -126,7 +132,6 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 }
 
 func GetExchange() models.ExchangeFrontendResponse {
-	// make req to DB
 
 	exchange := GetNewExchange("NBU", "UAH", "USD")
 

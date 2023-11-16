@@ -8,15 +8,26 @@ import (
 	"os"
 
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetWeatherData() models.FrontendWeatherResponse {
-	openWeatherRes := getOpenWeatherData("Kyiv")
+func GetWeatherData(userId string) models.FrontendWeatherResponse {
+	var response models.FrontendWeatherResponse
+	id, _ := uuid.Parse(userId)
 
-	return openWeatherRes
+	res, err := store.GetSettingByName(id, models.Weather)
+	if err != nil {
+		utils.ErrorLogger.Println("Error finding Weather setting:", err)
+		return response
+	}
+
+	response = GetNewWeatherData(res.Value["source"], res.Value["city"])
+
+	return response
 }
 
 func getWindDirection(windSpeed, rawDirect float64) string {

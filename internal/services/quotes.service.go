@@ -44,7 +44,6 @@ func GetQuote(userId string) models.QuoteResponse {
 		return response
 	}
 	dif := currentTime.Sub(res.UpdatedAt).Hours()
-	utils.InfoLogger.Println("Quote settings:", res)
 
 	if dif < 24 {
 		response = models.QuoteResponse{

@@ -6,10 +6,13 @@ import (
 	"io"
 	"math/rand"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -105,8 +108,28 @@ func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
 	return getPexelsBackgroundImage()
 }
 
-func GetBackgroundData() models.FrontendBackgroundImageResponse {
-	// TODO: Check in the DB how long ago the image was updated and return the new one or retrieve the old one from the DB
-	background := GetRandomBackground("unsplash.com")
-	return background
+func GetBackgroundData(userId string) models.FrontendBackgroundImageResponse {
+	var response models.FrontendBackgroundImageResponse
+	currentTime := time.Now()
+	id, _ := uuid.Parse(userId)
+
+	res, err := store.GetSettingByName(id, models.Background)
+	if err != nil {
+		utils.ErrorLogger.Println("Error finding Background setting:", err)
+		return response
+	}
+	dif := currentTime.Sub(res.UpdatedAt).Hours()
+
+	if dif < 24 {
+		response = models.FrontendBackgroundImageResponse{
+			Photographer: res.Value["photographer"],
+			Image:        res.Value["image"],
+			Alt:          res.Value["alt"],
+			Source:       res.Value["source"],
+			SourceUrl:    res.Value["source_url"],
+		}
+		return response
+	}
+	response = GetRandomBackground(res.Value["source"])
+	return response
 }

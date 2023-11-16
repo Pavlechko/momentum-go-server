@@ -5,11 +5,6 @@ type WeatherInput struct {
 	Source string `json:"source" binding:"required"`
 }
 
-// type WeatherData struct {
-// 	OpenWeather     FrontendWeatherResponse
-// 	TomorrowWeather FrontendWeatherResponse
-// }
-
 type WeatherFild struct {
 	Main        string `json:"main"`
 	Description string `json:"description"`

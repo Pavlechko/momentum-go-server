@@ -106,8 +106,7 @@ func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
 }
 
 func GetBackgroundData() models.FrontendBackgroundImageResponse {
-	// TO-DO
-	// Check in the DB how long ago the image was updated and return the new one or retrieve the old one from the DB
+	// TODO: Check in the DB how long ago the image was updated and return the new one or retrieve the old one from the DB
 	background := GetRandomBackground("unsplash.com")
 	return background
 }

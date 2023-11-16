@@ -14,9 +14,7 @@ import (
 )
 
 func GetWeatherData() models.FrontendWeatherResponse {
-	// make request to DB
-	openWeatherRes := getOpenWeatherData("kyiv")
-	// tomorrowWeatherRes := getTomorrowWeatherData("kyiv")
+	openWeatherRes := getOpenWeatherData("Kyiv")
 
 	return openWeatherRes
 }

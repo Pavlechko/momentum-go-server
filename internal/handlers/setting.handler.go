@@ -75,7 +75,13 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		var (
 			symbol = marketInput.Symbol
 		)
-		newMarket := services.MarketUpdate(userId, symbol)
-		WriteJSON(w, http.StatusOK, newMarket)
+		if slices.Contains(models.COMPANIES, symbol) {
+			newMarket := services.MarketUpdate(userId, symbol)
+			WriteJSON(w, http.StatusOK, newMarket)
+			return
+		}
+		WriteJSONError(w, http.StatusBadRequest, "No such company found")
+	default:
+		WriteJSONError(w, http.StatusNotFound, "No such setting found")
 	}
 }

@@ -125,9 +125,6 @@ func GetSettings(id uuid.UUID) models.SettingResponse {
 
 	result := DB.Find(&settingsModel, "user_id = ?", id)
 
-	utils.InfoLogger.Println(result)
-	utils.InfoLogger.Println(settingsModel)
-
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user settings", result.Error.Error())
 	}

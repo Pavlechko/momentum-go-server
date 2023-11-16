@@ -29,8 +29,14 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var source = backgroundInput.Source
-		newBackground := services.BackgroundUpdate(userId, source)
-		WriteJSON(w, http.StatusOK, newBackground)
+		for _, provider := range models.BACKGROUND_PROVIDERS {
+			if source == provider {
+				newBackground := services.BackgroundUpdate(userId, source)
+				WriteJSON(w, http.StatusOK, newBackground)
+				return
+			}
+		}
+		WriteJSONError(w, http.StatusBadRequest, "No such provider found")
 	case "weather":
 		var weatherInput models.WeatherInput
 		if !IsDecodeJSONRequest(w, r, &weatherInput) {
@@ -38,12 +44,19 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var (
-			source = weatherInput.Source
-			city   = weatherInput.City
+			source    = weatherInput.Source
+			inputCity = weatherInput.City
 		)
-
-		newWeather := services.WeatherUpdate(userId, source, city)
-		WriteJSON(w, http.StatusOK, newWeather)
+		for _, provider := range models.WEATHER_PROVIDERS {
+			for _, city := range models.CITIES {
+				if source == provider && inputCity == city {
+					newWeather := services.WeatherUpdate(userId, source, inputCity)
+					WriteJSON(w, http.StatusOK, newWeather)
+					return
+				}
+			}
+		}
+		WriteJSONError(w, http.StatusBadRequest, "No such provider or city found")
 	case "exchange":
 		var exchangeInput models.ExchangeInput
 		if !IsDecodeJSONRequest(w, r, &exchangeInput) {

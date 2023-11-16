@@ -22,3 +22,12 @@ type ExchangeFrontendResponse struct {
 type LayerResponse struct {
 	Rates map[string]ExchangeFrontendResponse `json:"rates"`
 }
+
+var CURRENCIES = []string{
+	"AUD", "BRL", "EGP", "CAD", "CLP", "CNY", "CZK", "EGP", "EUR", "GBP", "HKD",
+	"INR", "JPY", "KRW", "LTL", "LVL", "TRY", "USD", "XAG", "XAU", "UAH", "PLN",
+}
+
+var EXCHANGE_PROVIDERS = []string{
+	"NBU", "Layer",
+}

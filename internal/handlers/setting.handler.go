@@ -5,13 +5,10 @@ import (
 	"momentum-go-server/internal/services"
 	"momentum-go-server/internal/utils"
 	"net/http"
+	"slices"
 
 	"github.com/gorilla/mux"
 )
-
-func GetSettings(w http.ResponseWriter, r *http.Request) {
-	// TO-DO
-}
 
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	userId := utils.GetUserId(r)
@@ -68,8 +65,13 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 			from   = exchangeInput.From
 			to     = exchangeInput.To
 		)
-		newExchange := services.ExchangeUpdate(userId, source, from, to)
-		WriteJSON(w, http.StatusOK, newExchange)
+
+		if slices.Contains(models.EXCHANGE_PROVIDERS, source) && slices.Contains(models.CURRENCIES, from) && slices.Contains(models.CURRENCIES, to) {
+			newExchange := services.ExchangeUpdate(userId, source, from, to)
+			WriteJSON(w, http.StatusOK, newExchange)
+			return
+		}
+		WriteJSONError(w, http.StatusBadRequest, "No such provider or currency found")
 	case "market":
 		var marketInput models.MarketInput
 		if !IsDecodeJSONRequest(w, r, &marketInput) {

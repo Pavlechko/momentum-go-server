@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"io"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 	"net/http"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 func GetRandomQuote() models.QuoteResponse {
@@ -27,4 +31,27 @@ func GetRandomQuote() models.QuoteResponse {
 	json.Unmarshal([]byte(body), &response)
 
 	return response
+}
+
+func GetQuote(userId string) models.QuoteResponse {
+	var response models.QuoteResponse
+	currentTime := time.Now()
+	id, _ := uuid.Parse(userId)
+
+	res, err := store.GetSettingByName(id, models.Quote)
+	if err != nil {
+		utils.ErrorLogger.Println("Error finding Quote setting:", err)
+		return response
+	}
+	dif := currentTime.Sub(res.UpdatedAt).Hours()
+	utils.InfoLogger.Println("Quote settings:", res)
+
+	if dif < 24 {
+		response = models.QuoteResponse{
+			Content: res.Value["content"],
+			Author:  res.Value["author"],
+		}
+		return response
+	}
+	return QuoteUpdate(userId)
 }

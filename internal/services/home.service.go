@@ -8,8 +8,8 @@ func GetData(userId string) models.ResponseObj {
 	QuoteRes := GetQuote(userId)
 	BackgroundRes := GetBackgroundData(userId)
 	WeatherRes := GetWeatherData(userId)
+	ExchangeRes := GetExchange(userId)
 
-	ExchangeRes := GetExchange()
 	MarketRes := GetMarketData()
 	SettingRes := GetSettingData(userId)
 

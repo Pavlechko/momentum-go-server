@@ -1,5 +1,9 @@
 package models
 
+type MarketInput struct {
+	Symbol string `json:"symbol" binding:"required"`
+}
+
 type StockMarket struct {
 	Market struct {
 		Symbol        string `json:"01. symbol"`

@@ -34,7 +34,7 @@ func CreateUser(user models.UserInput) (string, error) {
 	token, tokenErr := utils.GenerateJWT(newUser)
 
 	if tokenErr != nil {
-		return "", fmt.Errorf("generation token error: %v", err.Error())
+		return "", fmt.Errorf("generation token error: %v", tokenErr.Error())
 	}
 
 	return token, nil
@@ -66,7 +66,7 @@ func GetUser(user models.UserInput) (string, error) {
 	token, tokenErr := utils.GenerateJWT(userData)
 
 	if tokenErr != nil {
-		return "", fmt.Errorf("generation token error: %v", err.Error())
+		return "", fmt.Errorf("generation token error: %v", tokenErr.Error())
 	}
 
 	return token, nil

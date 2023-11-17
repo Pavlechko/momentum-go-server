@@ -1,8 +1,8 @@
 package models
 
-type WeatherData struct {
-	OpenWeather     FrontendWeatherResponse
-	TomorrowWeather FrontendWeatherResponse
+type WeatherInput struct {
+	City   string `json:"city" binding:"required"`
+	Source string `json:"source" binding:"required"`
 }
 
 type WeatherFild struct {
@@ -57,5 +57,5 @@ type FrontendWeatherResponse struct {
 	WeaterMain string  `json:"main"`
 	WeaterIcon string  `json:"icon"`
 	City       string  `json:"city"`
-	Sourse     string  `json:"source"`
+	Source     string  `json:"source"`
 }

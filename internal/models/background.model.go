@@ -1,10 +1,5 @@
 package models
 
-type BackgroundData struct {
-	Pexels   FrontendBackgroundImageResponse
-	Unsplash FrontendBackgroundImageResponse
-}
-
 type Src struct {
 	Original string `json:"landscape"`
 }
@@ -47,4 +42,8 @@ type FrontendBackgroundImageResponse struct {
 	Alt          string `json:"alt"`
 	Source       string `json:"source"`
 	SourceUrl    string `json:"source_url"`
+}
+
+type BackgroundInput struct {
+	Source string `json:"source" binding:"required"`
 }

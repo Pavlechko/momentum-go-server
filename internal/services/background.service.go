@@ -13,19 +13,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetBackgroundData() models.BackgroundData {
-
-	pexelsRes := getPexelsBackgroundImage()
-	unsplashRes := getUnsplashBackgroundImage()
-
-	Backgrounds := models.BackgroundData{
-		Pexels:   pexelsRes,
-		Unsplash: unsplashRes,
-	}
-
-	return Backgrounds
-}
-
 func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 	var response models.PexelsImageResponse
 	var frontendResponse models.FrontendBackgroundImageResponse
@@ -109,4 +96,17 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 		SourceUrl:    response.SourceUrl.Image,
 	}
 	return frontendResponse
+}
+
+func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
+	if source == "unsplash.com" {
+		return getUnsplashBackgroundImage()
+	}
+	return getPexelsBackgroundImage()
+}
+
+func GetBackgroundData() models.FrontendBackgroundImageResponse {
+	// TODO: Check in the DB how long ago the image was updated and return the new one or retrieve the old one from the DB
+	background := GetRandomBackground("unsplash.com")
+	return background
 }

@@ -35,7 +35,7 @@ func GetDefaultSettings(id uuid.UUID) []*models.Setting {
 			UserID: id,
 			Name:   string(models.Weather),
 			Value: map[string]string{
-				"source": "OpenWeatherAPI",
+				"source": "OpenWeather",
 				"city":   "Kyiv",
 			},
 		},
@@ -63,14 +63,15 @@ func GetDefaultSettings(id uuid.UUID) []*models.Setting {
 			Name:   string(models.Exchange),
 			Value: map[string]string{
 				"source": "NBU",
-				"base":   "UAH",
+				"from":   "UAH",
+				"to":     "USD",
 			},
 		},
 		{
 			UserID: id,
 			Name:   string(models.Market),
 			Value: map[string]string{
-				"Symbol": "DAX",
+				"symbol": "DAX",
 			},
 		},
 	}

@@ -9,8 +9,7 @@ func GetData(userId string) models.ResponseObj {
 	BackgroundRes := GetBackgroundData(userId)
 	WeatherRes := GetWeatherData(userId)
 	ExchangeRes := GetExchange(userId)
-
-	MarketRes := GetMarketData()
+	MarketRes := GetMarketData(userId)
 	SettingRes := GetSettingData(userId)
 
 	Response = models.ResponseObj{

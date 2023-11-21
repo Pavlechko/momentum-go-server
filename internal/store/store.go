@@ -2,24 +2,26 @@ package store
 
 import (
 	"fmt"
-	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/utils"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/google/uuid"
-	_ "github.com/joho/godotenv/autoload"
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/utils"
 )
 
 var DB *gorm.DB
-var err error
 var now = time.Now()
 
 func ContentDB() {
-
+	err := godotenv.Load()
+	if err != nil {
+		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
+	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Kyiv",
 		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_USER"),
@@ -47,7 +49,7 @@ func ContentDB() {
 func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 	var userModel models.User
 
-	if isEntityExist(userModel, user.Name) {
+	if isEntityExist(&userModel, user.Name) {
 		utils.ErrorLogger.Println("user with name:", user.Name, "already exists")
 		return &models.UserResponse{}, fmt.Errorf("user with name: %v already exists", user.Name)
 	}
@@ -63,7 +65,7 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error creating the user", user.Name, "Error message:", result.Error.Error())
-		return &models.UserResponse{}, fmt.Errorf(result.Error.Error())
+		return &models.UserResponse{}, fmt.Errorf("%s", result.Error.Error())
 	}
 
 	userResponse := &models.UserResponse{
@@ -77,7 +79,7 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 	var userModel models.User
 
-	if !isEntityExist(userModel, user.Name) {
+	if !isEntityExist(&userModel, user.Name) {
 		utils.ErrorLogger.Println("user with the name:", user.Name, "not found")
 		return &models.UserResponseWithHash{}, fmt.Errorf("user with the name: %v not found", user.Name)
 	}
@@ -86,7 +88,7 @@ func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user", result.Error.Error())
-		return &models.UserResponseWithHash{}, fmt.Errorf(result.Error.Error())
+		return &models.UserResponseWithHash{}, fmt.Errorf("%s", result.Error.Error())
 	}
 
 	userResponse := &models.UserResponseWithHash{
@@ -100,8 +102,7 @@ func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 	return userResponse, nil
 }
 
-func isEntityExist(model models.User, name string) bool {
-
+func isEntityExist(model *models.User, name string) bool {
 	entityExist := DB.Find(&model, "name = ?", name)
 
 	return entityExist.RowsAffected == 1

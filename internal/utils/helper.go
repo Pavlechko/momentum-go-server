@@ -2,12 +2,15 @@ package utils
 
 import (
 	"log"
-	"momentum-go-server/internal/models"
 	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
+
+	"momentum-go-server/internal/models"
 )
+
+const chmod = 0666
 
 var InfoLogger *log.Logger
 var ErrorLogger *log.Logger
@@ -18,13 +21,11 @@ func init() {
 		log.Println("Error riding absolute path: ", err)
 		return
 	}
-
-	myLog, err := os.OpenFile(path+"/momentum-log.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	myLog, err := os.OpenFile(path+"/momentum-log.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, chmod)
 	if err != nil {
 		log.Println("Error opening file: ", err)
 		return
 	}
-
 	InfoLogger = log.New(myLog, "[Info]:\t", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)
 	ErrorLogger = log.New(myLog, "[Error]:\t", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)
 }
@@ -44,7 +45,7 @@ func GetDefaultSettings(id uuid.UUID) []*models.Setting {
 			Name:   string(models.Background),
 			Value: map[string]string{
 				"source":       "unsplash.com",
-				"image":        "https://images.unsplash.com/photo-1465189684280-6a8fa9b19a7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDU5Nzd8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTk2MjA3NDd8&ixlib=rb-4.0.3&q=80&w=1080",
+				"image":        "https://images.unsplash.com/photo-1465189684280-6a8fa9b19a7a?q=80&w=1080",
 				"photographer": "Kalen Emsley",
 				"alt":          "body of water surrounding with trees",
 				"source_url":   "https://unsplash.com/photos/body-of-water-surrounding-with-trees-_LuLiJc1cdo",
@@ -75,6 +76,5 @@ func GetDefaultSettings(id uuid.UUID) []*models.Setting {
 			},
 		},
 	}
-
 	return defaultSettings
 }

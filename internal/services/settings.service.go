@@ -1,17 +1,17 @@
 package services
 
 import (
+	"github.com/google/uuid"
+
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
-
-	"github.com/google/uuid"
 )
 
-func QuoteUpdate(userId string) models.QuoteResponse {
+func QuoteUpdate(userID string) models.QuoteResponse {
 	newQuote := GetRandomQuote()
 
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"author":  newQuote.Author,
 		"content": newQuote.Content,
@@ -27,15 +27,15 @@ func QuoteUpdate(userId string) models.QuoteResponse {
 	}
 }
 
-func BackgroundUpdate(userId, source string) models.FrontendBackgroundImageResponse {
+func BackgroundUpdate(userID, source string) models.FrontendBackgroundImageResponse {
 	newBackground := GetRandomBackground(source)
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"photographer": newBackground.Photographer,
 		"image":        newBackground.Image,
 		"alt":          newBackground.Alt,
 		"source":       newBackground.Source,
-		"source_url":   newBackground.SourceUrl,
+		"source_url":   newBackground.SourceURL,
 	}
 	res, err := store.UpdateSetting(id, models.Background, v)
 	if err != nil {
@@ -48,13 +48,13 @@ func BackgroundUpdate(userId, source string) models.FrontendBackgroundImageRespo
 		Image:        res.Value["image"],
 		Alt:          res.Value["alt"],
 		Source:       res.Value["source"],
-		SourceUrl:    res.Value["source_url"],
+		SourceURL:    res.Value["source_url"],
 	}
 }
 
-func WeatherUpdate(userId, source, city string) models.FrontendWeatherResponse {
+func WeatherUpdate(userID, source, city string) models.FrontendWeatherResponse {
 	newWeather := GetNewWeatherData(source, city)
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 
 	v := map[string]string{
 		"city":   city,
@@ -69,9 +69,9 @@ func WeatherUpdate(userId, source, city string) models.FrontendWeatherResponse {
 	return newWeather
 }
 
-func ExchangeUpdate(userId, source, from, to string) models.ExchangeFrontendResponse {
+func ExchangeUpdate(userID, source, from, to string) models.ExchangeFrontendResponse {
 	newExchange := GetNewExchange(source, from, to)
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"from":   from,
 		"source": source,
@@ -85,9 +85,9 @@ func ExchangeUpdate(userId, source, from, to string) models.ExchangeFrontendResp
 	return newExchange
 }
 
-func MarketUpdate(userId, symbol string) models.StockMarketResponse {
+func MarketUpdate(userID, symbol string) models.StockMarketResponse {
 	newMarket := GetMarket(symbol)
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"symbol": symbol,
 	}
@@ -99,8 +99,8 @@ func MarketUpdate(userId, symbol string) models.StockMarketResponse {
 	return newMarket
 }
 
-func GetSettingData(userId string) models.SettingResponse {
-	id, _ := uuid.Parse(userId)
+func GetSettingData(userID string) models.SettingResponse {
+	id, _ := uuid.Parse(userID)
 	settings := store.GetSettings(id)
 	return settings
 }

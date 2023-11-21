@@ -4,19 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
-	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 
 	"github.com/google/uuid"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
+
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/utils"
 )
 
 func GetMarket(symbol string) models.StockMarketResponse {
 	var response models.StockMarket
 	var frontendResponse models.StockMarketResponse
+
+	err := godotenv.Load()
+	if err != nil {
+		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
+	}
 
 	apiURL := fmt.Sprintf("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=", symbol)
 
@@ -35,7 +41,12 @@ func GetMarket(symbol string) models.StockMarketResponse {
 		return frontendResponse
 	}
 
-	json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		utils.ErrorLogger.Println("json.Unmarshal response", err)
+		return frontendResponse
+	}
+
 	frontendResponse = models.StockMarketResponse{
 		Symbol:        response.Market.Symbol,
 		Price:         response.Market.Price,
@@ -46,9 +57,9 @@ func GetMarket(symbol string) models.StockMarketResponse {
 	return frontendResponse
 }
 
-func GetMarketData(userId string) models.StockMarketResponse {
+func GetMarketData(userID string) models.StockMarketResponse {
 	var response models.StockMarketResponse
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 
 	res, err := store.GetSettingByName(id, models.Market)
 	if err != nil {

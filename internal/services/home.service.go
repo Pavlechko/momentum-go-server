@@ -2,15 +2,15 @@ package services
 
 import "momentum-go-server/internal/models"
 
-func GetData(userId string) models.ResponseObj {
+func GetData(userID string) models.ResponseObj {
 	var Response models.ResponseObj
 
-	QuoteRes := GetQuote(userId)
-	BackgroundRes := GetBackgroundData(userId)
-	WeatherRes := GetWeatherData(userId)
-	ExchangeRes := GetExchange(userId)
-	MarketRes := GetMarketData(userId)
-	SettingRes := GetSettingData(userId)
+	QuoteRes := GetQuote(userID)
+	BackgroundRes := GetBackgroundData(userID)
+	WeatherRes := GetWeatherData(userID)
+	ExchangeRes := GetExchange(userID)
+	MarketRes := GetMarketData(userID)
+	SettingRes := GetSettingData(userID)
 
 	Response = models.ResponseObj{
 		Weather:    WeatherRes,

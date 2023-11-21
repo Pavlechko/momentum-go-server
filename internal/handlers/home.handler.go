@@ -1,15 +1,19 @@
 package handlers
 
 import (
+	"net/http"
+
 	"momentum-go-server/internal/services"
 	"momentum-go-server/internal/utils"
-	"net/http"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	userId := utils.GetUserId(r)
+	userID := utils.GetUserID(r)
 
-	Response := services.GetData(userId)
+	Response := services.GetData(userID)
 
-	WriteJSON(w, http.StatusOK, Response)
+	err := WriteJSON(w, http.StatusOK, Response)
+	if err != nil {
+		utils.ErrorLogger.Printf("Error write JSON %s", err.Error())
+	}
 }

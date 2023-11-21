@@ -3,13 +3,14 @@ package services
 import (
 	"encoding/json"
 	"io"
-	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
-	"momentum-go-server/internal/utils"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/utils"
 )
 
 func GetRandomQuote() models.QuoteResponse {
@@ -28,15 +29,21 @@ func GetRandomQuote() models.QuoteResponse {
 		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
 		return response
 	}
-	json.Unmarshal([]byte(body), &response)
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		utils.ErrorLogger.Println("json.Unmarshal response", err)
+		return response
+	}
 
 	return response
 }
 
-func GetQuote(userId string) models.QuoteResponse {
+func GetQuote(userID string) models.QuoteResponse {
+	const oneDayHours = 24
 	var response models.QuoteResponse
 	currentTime := time.Now()
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 
 	res, err := store.GetSettingByName(id, models.Quote)
 	if err != nil {
@@ -45,12 +52,12 @@ func GetQuote(userId string) models.QuoteResponse {
 	}
 	dif := currentTime.Sub(res.UpdatedAt).Hours()
 
-	if dif < 24 {
+	if dif < oneDayHours {
 		response = models.QuoteResponse{
 			Content: res.Value["content"],
 			Author:  res.Value["author"],
 		}
 		return response
 	}
-	return QuoteUpdate(userId)
+	return QuoteUpdate(userID)
 }

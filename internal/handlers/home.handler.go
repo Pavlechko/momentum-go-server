@@ -9,8 +9,12 @@ import (
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	userID := utils.GetUserID(r)
+	res := &services.Res{
+		Counter: 0,
+		Quit:    make(chan bool),
+	}
 
-	Response := services.GetData(userID)
+	Response := res.GetData(userID)
 
 	err := WriteJSON(w, http.StatusOK, Response)
 	if err != nil {

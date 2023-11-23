@@ -16,8 +16,8 @@ type User struct {
 }
 
 type UserInput struct {
-	Name     string `json:"name" binding:"required"`
-	Password string `json:"password" binding:"required,min=8"`
+	Name     string `json:"name" binding:"required,min=3,max=24"`
+	Password string `json:"password" binding:"required,min=6,max=24"`
 }
 
 type UserResponseWithHash struct {

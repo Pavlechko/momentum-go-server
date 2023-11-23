@@ -19,3 +19,7 @@ type StockMarketResponse struct {
 	Change        string `json:"change"`
 	ChangePercent string `json:"change_percent"`
 }
+
+var COMPANIES = []string{
+	"TSLA", "AAPL", "NVDA", "AMZN", "LCID", "MSFT", "SIEGY", "ENR", "LHX", "BMWYY", "DAX",
+}

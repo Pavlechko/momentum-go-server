@@ -47,3 +47,5 @@ type FrontendBackgroundImageResponse struct {
 type BackgroundInput struct {
 	Source string `json:"source" binding:"required"`
 }
+
+var BACKGROUND_PROVIDERS = []string{"unsplash.com", "pexels.com"}

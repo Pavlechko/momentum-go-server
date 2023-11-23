@@ -59,3 +59,11 @@ type FrontendWeatherResponse struct {
 	City       string  `json:"city"`
 	Source     string  `json:"source"`
 }
+
+var CITIES = []string{
+	"Kyiv", "Kharkiv", "Odesa", "Dnipro", "Donetsk", "Lviv", "Vinnytsia", "Zaporizhia", "Ivano-Frankivsk",
+	"Poltava", "Mykolaiv", "Chernihiv", "Cherkasy", "Chernivtsi", "Sumy", "Kherson", "Luhansk", "Rivne",
+	"Ternopil", "Zhytomyr", "Khmelnytskyi", "Uzhhorod", "Lutsk", "Simferopol", "Kramatorsk", "Kropyvnytskyi",
+}
+
+var WEATHER_PROVIDERS = []string{"OpenWeather", "TomorrowWeather"}

@@ -144,6 +144,17 @@ func GetSettings(id uuid.UUID) models.SettingResponse {
 	return settingRes
 }
 
+func GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error) {
+	var setting models.Setting
+
+	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	if result.Error != nil {
+		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
+		return setting, result.Error
+	}
+	return setting, nil
+}
+
 func UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error) {
 	var setting models.Setting
 

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -44,6 +46,16 @@ func GetMarket(symbol string) models.StockMarketResponse {
 	return frontendResponse
 }
 
-func GetMarketData() models.StockMarketResponse {
-	return GetMarket("DAX")
+func GetMarketData(userId string) models.StockMarketResponse {
+	var response models.StockMarketResponse
+	id, _ := uuid.Parse(userId)
+
+	res, err := store.GetSettingByName(id, models.Market)
+	if err != nil {
+		utils.ErrorLogger.Println("Error finding Market setting:", err)
+		return response
+	}
+	var symbol = res.Value["symbol"]
+	response = GetMarket(symbol)
+	return response
 }

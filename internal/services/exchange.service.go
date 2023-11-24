@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io"
 	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -131,11 +133,23 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 	return frontendResponse
 }
 
-func GetExchange() models.ExchangeFrontendResponse {
+func GetExchange(userId string) models.ExchangeFrontendResponse {
+	var response models.ExchangeFrontendResponse
+	id, _ := uuid.Parse(userId)
 
-	exchange := GetNewExchange("NBU", "UAH", "USD")
+	res, err := store.GetSettingByName(id, models.Exchange)
+	if err != nil {
+		utils.ErrorLogger.Println("Error finding Exchange setting:", err)
+		return response
+	}
+	var (
+		source = res.Value["source"]
+		from   = res.Value["from"]
+		to     = res.Value["to"]
+	)
+	response = GetNewExchange(source, from, to)
 
-	return exchange
+	return response
 }
 
 func GetNewExchange(source, from, to string) models.ExchangeFrontendResponse {

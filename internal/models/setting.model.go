@@ -23,8 +23,8 @@ type ValueMap map[string]string
 
 type Setting struct {
 	ID        int       `gorm:"type:int;primary_key"`
-	UserID    uuid.UUID `gorm:"type:uuid;not null"`
-	Name      string    `gorm:"type:varchar(255);not null"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index:idx_user_id_name,unique"`
+	Name      string    `gorm:"type:varchar(255);not null;index:idx_user_id_name,unique"`
 	Value     ValueMap  `gorm:"type:jsonb;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time

@@ -11,12 +11,13 @@ import (
 )
 
 func VerifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	const correctHeaderLength = 2
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header["Authorization"] != nil {
 
 			authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 
-			if len(authHeader) != 2 {
+			if len(authHeader) != correctHeaderLength {
 				log.Println("20 line in verify JWT")
 				handleError(w, "Malformed Token")
 			} else {

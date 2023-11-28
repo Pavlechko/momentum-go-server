@@ -23,7 +23,6 @@ func NewAPIServer(listenPort string) *APIServer {
 }
 
 func (s *APIServer) Run() {
-
 	r := mux.NewRouter()
 
 	r.HandleFunc("/auth/signup", handlers.SignUpHandler).Methods("POST")
@@ -39,5 +38,12 @@ func (s *APIServer) Run() {
 	http.Handle("/", r)
 	fmt.Println("Server is listening on port: ", s.listenPort)
 	utils.InfoLogger.Println("Server is listening on port: ", s.listenPort)
-	http.ListenAndServe(s.listenPort, h.CORS(originsOk, headersOk, methodsOk, exposedHeadersOk)(r))
+	server := &http.Server{
+		Addr:    s.listenPort,
+		Handler: h.CORS(originsOk, headersOk, methodsOk, exposedHeadersOk)(r),
+	}
+	err := server.ListenAndServe()
+	if err != nil {
+		utils.ErrorLogger.Println("Error listening server:", err.Error())
+	}
 }

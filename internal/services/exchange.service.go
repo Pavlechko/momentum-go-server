@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
-	"momentum-go-server/internal/utils"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
+
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/utils"
 )
 
 var currentTime = time.Now()
@@ -40,7 +41,7 @@ func getNBUData(date, symbol string) models.NBU {
 		return NBURes
 	}
 
-	err = json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		utils.ErrorLogger.Println("json.Unmarshal response", err)
 		return NBURes
@@ -94,12 +95,23 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 
 	client := &http.Client{}
 
-	apiURL := fmt.Sprintf("https://api.apilayer.com/exchangerates_data/fluctuation?base=%s&start_date=%s&end_date=%s&symbols=%s", from, yyyymmddNoDashPreviousDay, yyyymmddNoDash, to)
+	apiURL := fmt.Sprintf(
+		"https://api.apilayer.com/exchangerates_data/fluctuation?base=%s&start_date=%s&end_date=%s&symbols=%s",
+		from,
+		yyyymmddNoDashPreviousDay,
+		yyyymmddNoDash,
+		to,
+	)
 
-	req, err := http.NewRequest("GET", apiURL, nil)
+	req, err := http.NewRequest("GET", apiURL, http.NoBody)
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
+	}
+
+	err = godotenv.Load()
+	if err != nil {
+		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
 	}
 
 	req.Header.Set("apikey", os.Getenv("LAYER_EXCHANGE_API"))
@@ -118,7 +130,11 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 		return frontendResponse
 	}
 
-	json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		utils.ErrorLogger.Println("json.Unmarshal response", err)
+		return frontendResponse
+	}
 
 	for _, rate := range response.Rates {
 		frontendResponse = models.ExchangeFrontendResponse{
@@ -133,9 +149,9 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 	return frontendResponse
 }
 
-func GetExchange(userId string) models.ExchangeFrontendResponse {
+func GetExchange(userID string) models.ExchangeFrontendResponse {
 	var response models.ExchangeFrontendResponse
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 
 	res, err := store.GetSettingByName(id, models.Exchange)
 	if err != nil {

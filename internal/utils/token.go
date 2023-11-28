@@ -2,22 +2,30 @@ package utils
 
 import (
 	"fmt"
-	"momentum-go-server/internal/models"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"momentum-go-server/internal/models"
+
 	"github.com/golang-jwt/jwt/v5"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
 )
 
+const sixty int8 = 60
+const correctHeaderLength = 2
+
 func GenerateJWT(user *models.UserResponse) (string, error) {
+	err := godotenv.Load()
+	if err != nil {
+		ErrorLogger.Printf("Error loading .env file, %s", err.Error())
+	}
 	now := time.Now().UTC()
 	privateKey := os.Getenv("API_SECRET")
 
 	claims := &jwt.MapClaims{
-		"exp":      now.Add(time.Duration(60) * time.Minute).Unix(),
+		"exp":      now.Add(time.Duration(sixty) * time.Minute).Unix(),
 		"userId":   user.ID,
 		"userName": user.Name,
 	}
@@ -33,12 +41,11 @@ func GenerateJWT(user *models.UserResponse) (string, error) {
 	return tokenString, err
 }
 
-func GetUserId(r *http.Request) string {
+func GetUserID(r *http.Request) string {
 	if r.Header["Authorization"] != nil {
-
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 
-		if len(authHeader) != 2 {
+		if len(authHeader) != correctHeaderLength {
 			ErrorLogger.Println("Malformed Token")
 			return ""
 		}
@@ -55,12 +62,10 @@ func GetUserId(r *http.Request) string {
 				ErrorLogger.Println("Error parsing userId")
 			}
 			return id
-		} else {
-			ErrorLogger.Println("Error parsing token")
-			return ""
 		}
-	} else {
-		ErrorLogger.Println("You're Unauthorized due to No token in the header")
+		ErrorLogger.Println("Error parsing token")
 		return ""
 	}
+	ErrorLogger.Println("You're Unauthorized due to No token in the header")
+	return ""
 }

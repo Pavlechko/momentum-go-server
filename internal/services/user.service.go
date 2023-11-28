@@ -2,25 +2,28 @@ package services
 
 import (
 	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(user models.UserInput) (string, error) {
+const minNameLeng = 3
+const minPassLeng = 6
 
+func CreateUser(user models.UserInput) (string, error) {
 	err := validateUser(user)
 
 	if err != nil {
-		return "", fmt.Errorf(err.Error())
+		return "", fmt.Errorf("%s", err.Error())
 	}
 
 	hashPasword, err := hashPassword(user.Password)
 
 	if err != nil {
-		return "", fmt.Errorf(err.Error())
+		return "", fmt.Errorf("%s", err.Error())
 	}
 
 	user.Password = hashPasword
@@ -28,7 +31,7 @@ func CreateUser(user models.UserInput) (string, error) {
 	newUser, err := store.CreateUser(user)
 
 	if err != nil {
-		return "", fmt.Errorf(err.Error())
+		return "", fmt.Errorf("%s", err.Error())
 	}
 
 	token, tokenErr := utils.GenerateJWT(newUser)
@@ -44,18 +47,18 @@ func GetUser(user models.UserInput) (string, error) {
 	err := validateUser(user)
 
 	if err != nil {
-		return "", fmt.Errorf(err.Error())
+		return "", fmt.Errorf("%s", err.Error())
 	}
 
 	existUser, err := store.GetUser(user)
 
 	if err != nil {
-		return "", fmt.Errorf(err.Error())
+		return "", fmt.Errorf("%s", err.Error())
 	}
 
 	err = VerifyPassword(existUser.Hashpassword, user.Password)
 	if err != nil {
-		return "", fmt.Errorf("incorrect password or name")
+		return "", fmt.Errorf("incorrect password or name. Error:%s", err.Error())
 	}
 
 	userData := &models.UserResponse{
@@ -73,9 +76,9 @@ func GetUser(user models.UserInput) (string, error) {
 }
 
 func validateUser(user models.UserInput) error {
-	if len(user.Name) < 3 {
+	if len(user.Name) < minNameLeng {
 		return fmt.Errorf("your name is too short, min 3 symbols")
-	} else if len(user.Password) < 6 {
+	} else if len(user.Password) < minPassLeng {
 		return fmt.Errorf("your password is too short, min 6 symbols")
 	}
 
@@ -91,6 +94,6 @@ func hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func VerifyPassword(hashedPassword string, candidatePassword string) error {
+func VerifyPassword(hashedPassword, candidatePassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(candidatePassword))
 }

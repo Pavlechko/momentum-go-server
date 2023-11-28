@@ -7,8 +7,6 @@ import (
 
 func main() {
 	store.ContentDB()
-
 	server := routes.NewAPIServer(":8080")
 	server.Run()
-	// time.Sleep(10 * time.Second)
 }

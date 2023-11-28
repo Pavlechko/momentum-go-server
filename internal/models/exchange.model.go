@@ -28,6 +28,6 @@ var CURRENCIES = []string{
 	"INR", "JPY", "KRW", "LTL", "LVL", "TRY", "USD", "XAG", "XAU", "UAH", "PLN",
 }
 
-var EXCHANGE_PROVIDERS = []string{
+var ExchangeProviders = []string{
 	"NBU", "Layer",
 }

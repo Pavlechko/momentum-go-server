@@ -1,32 +1,43 @@
 package services
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
-	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
-	"momentum-go-server/internal/utils"
+	"math/big"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
+
+	"momentum-go-server/internal/models"
+	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/utils"
 )
 
 func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
+	const maxPages = 5000
 	var response models.PexelsImageResponse
 	var frontendResponse models.FrontendBackgroundImageResponse
 
+	err := godotenv.Load()
+	if err != nil {
+		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
+	}
+
 	client := &http.Client{}
 
-	randomPage := rand.Intn(5000)
+	randomPage, err := rand.Int(rand.Reader, big.NewInt(maxPages))
+	if err != nil {
+		utils.ErrorLogger.Printf("Error creating random number: %s", err.Error())
+	}
 
 	apiURL := fmt.Sprintf("https://api.pexels.com/v1/search?query=Nature&page=%d&orientation=landscape&per_page=1", randomPage)
 
-	req, err := http.NewRequest("GET", apiURL, nil)
+	req, err := http.NewRequest("GET", apiURL, http.NoBody)
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
@@ -48,14 +59,17 @@ func getPexelsBackgroundImage() models.FrontendBackgroundImageResponse {
 		return frontendResponse
 	}
 
-	json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		utils.ErrorLogger.Println("Error json.Unmarshal response:", err)
+	}
 
 	frontendResponse = models.FrontendBackgroundImageResponse{
 		Photographer: response.Photos[0].Photographer,
 		Image:        response.Photos[0].Image.Original,
 		Alt:          response.Photos[0].Alt,
 		Source:       "pexels.com",
-		SourceUrl:    response.Photos[0].SourseUrl,
+		SourceURL:    response.Photos[0].SourseURL,
 	}
 	return frontendResponse
 }
@@ -66,7 +80,7 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", "https://api.unsplash.com/photos/random?query=nature&orientation=landscape", nil)
+	req, err := http.NewRequest("GET", "https://api.unsplash.com/photos/random?query=nature&orientation=landscape", http.NoBody)
 	if err != nil {
 		utils.ErrorLogger.Println("Error creating HTTP request:", err)
 		return frontendResponse
@@ -89,14 +103,17 @@ func getUnsplashBackgroundImage() models.FrontendBackgroundImageResponse {
 		return frontendResponse
 	}
 
-	json.Unmarshal([]byte(body), &response)
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		utils.ErrorLogger.Println("Error json.Unmarshal response:", err)
+	}
 
 	frontendResponse = models.FrontendBackgroundImageResponse{
 		Photographer: response.Photographer.Name,
 		Image:        response.Image.Regular,
 		Alt:          response.Alt,
 		Source:       "unsplash.com",
-		SourceUrl:    response.SourceUrl.Image,
+		SourceURL:    response.SourceURL.Image,
 	}
 	return frontendResponse
 }
@@ -108,10 +125,11 @@ func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
 	return getPexelsBackgroundImage()
 }
 
-func GetBackgroundData(userId string) models.FrontendBackgroundImageResponse {
+func GetBackgroundData(userID string) models.FrontendBackgroundImageResponse {
+	const oneDayHours = 24
 	var response models.FrontendBackgroundImageResponse
 	currentTime := time.Now()
-	id, _ := uuid.Parse(userId)
+	id, _ := uuid.Parse(userID)
 
 	res, err := store.GetSettingByName(id, models.Background)
 	if err != nil {
@@ -120,13 +138,13 @@ func GetBackgroundData(userId string) models.FrontendBackgroundImageResponse {
 	}
 	dif := currentTime.Sub(res.UpdatedAt).Hours()
 
-	if dif < 24 {
+	if dif < oneDayHours {
 		response = models.FrontendBackgroundImageResponse{
 			Photographer: res.Value["photographer"],
 			Image:        res.Value["image"],
 			Alt:          res.Value["alt"],
 			Source:       res.Value["source"],
-			SourceUrl:    res.Value["source_url"],
+			SourceURL:    res.Value["source_url"],
 		}
 		return response
 	}

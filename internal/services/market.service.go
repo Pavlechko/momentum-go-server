@@ -11,7 +11,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
@@ -57,11 +56,11 @@ func GetMarket(symbol string) models.StockMarketResponse {
 	return frontendResponse
 }
 
-func GetMarketData(userID string) models.StockMarketResponse {
+func (s *Service) GetMarketData(userID string) models.StockMarketResponse {
 	var response models.StockMarketResponse
 	id, _ := uuid.Parse(userID)
 
-	res, err := store.GetSettingByName(id, models.Market)
+	res, err := s.DB.GetSettingByName(id, models.Market)
 	if err != nil {
 		utils.ErrorLogger.Println("Error finding Market setting:", err)
 		return response

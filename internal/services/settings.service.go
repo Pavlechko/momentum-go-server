@@ -4,11 +4,10 @@ import (
 	"github.com/google/uuid"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
-func QuoteUpdate(userID string) models.QuoteResponse {
+func (s *Service) QuoteUpdate(userID string) models.QuoteResponse {
 	newQuote := GetRandomQuote()
 
 	id, _ := uuid.Parse(userID)
@@ -16,7 +15,7 @@ func QuoteUpdate(userID string) models.QuoteResponse {
 		"author":  newQuote.Author,
 		"content": newQuote.Content,
 	}
-	res, err := store.UpdateSetting(id, models.Quote, v)
+	res, err := s.DB.UpdateSetting(id, models.Quote, v)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating quote settings:", err)
 		return newQuote
@@ -27,7 +26,7 @@ func QuoteUpdate(userID string) models.QuoteResponse {
 	}
 }
 
-func BackgroundUpdate(userID, source string) models.FrontendBackgroundImageResponse {
+func (s *Service) BackgroundUpdate(userID, source string) models.FrontendBackgroundImageResponse {
 	newBackground := GetRandomBackground(source)
 	id, _ := uuid.Parse(userID)
 	v := map[string]string{
@@ -37,7 +36,7 @@ func BackgroundUpdate(userID, source string) models.FrontendBackgroundImageRespo
 		"source":       newBackground.Source,
 		"source_url":   newBackground.SourceURL,
 	}
-	res, err := store.UpdateSetting(id, models.Background, v)
+	res, err := s.DB.UpdateSetting(id, models.Background, v)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating background settings:", err)
 		return newBackground
@@ -52,7 +51,7 @@ func BackgroundUpdate(userID, source string) models.FrontendBackgroundImageRespo
 	}
 }
 
-func WeatherUpdate(userID, source, city string) models.FrontendWeatherResponse {
+func (s *Service) WeatherUpdate(userID, source, city string) models.FrontendWeatherResponse {
 	newWeather := GetNewWeatherData(source, city)
 	id, _ := uuid.Parse(userID)
 
@@ -60,7 +59,7 @@ func WeatherUpdate(userID, source, city string) models.FrontendWeatherResponse {
 		"city":   city,
 		"source": source,
 	}
-	_, err := store.UpdateSetting(id, models.Weather, v)
+	_, err := s.DB.UpdateSetting(id, models.Weather, v)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating weather settings:", err)
 		return newWeather
@@ -69,7 +68,7 @@ func WeatherUpdate(userID, source, city string) models.FrontendWeatherResponse {
 	return newWeather
 }
 
-func ExchangeUpdate(userID, source, from, to string) models.ExchangeFrontendResponse {
+func (s *Service) ExchangeUpdate(userID, source, from, to string) models.ExchangeFrontendResponse {
 	newExchange := GetNewExchange(source, from, to)
 	id, _ := uuid.Parse(userID)
 	v := map[string]string{
@@ -77,7 +76,7 @@ func ExchangeUpdate(userID, source, from, to string) models.ExchangeFrontendResp
 		"source": source,
 		"to":     to,
 	}
-	_, err := store.UpdateSetting(id, models.Exchange, v)
+	_, err := s.DB.UpdateSetting(id, models.Exchange, v)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating exchange settings:", err)
 		return newExchange
@@ -85,13 +84,13 @@ func ExchangeUpdate(userID, source, from, to string) models.ExchangeFrontendResp
 	return newExchange
 }
 
-func MarketUpdate(userID, symbol string) models.StockMarketResponse {
+func (s *Service) MarketUpdate(userID, symbol string) models.StockMarketResponse {
 	newMarket := GetMarket(symbol)
 	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"symbol": symbol,
 	}
-	_, err := store.UpdateSetting(id, models.Market, v)
+	_, err := s.DB.UpdateSetting(id, models.Market, v)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating market settings:", err)
 		return newMarket
@@ -99,8 +98,8 @@ func MarketUpdate(userID, symbol string) models.StockMarketResponse {
 	return newMarket
 }
 
-func GetSettingData(userID string) models.SettingResponse {
+func (s *Service) GetSettingData(userID string) models.SettingResponse {
 	id, _ := uuid.Parse(userID)
-	settings := store.GetSettings(id)
+	settings := s.DB.GetSettings(id)
 	return settings
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
@@ -149,11 +148,11 @@ func getLayerExchange(from, to string) models.ExchangeFrontendResponse {
 	return frontendResponse
 }
 
-func GetExchange(userID string) models.ExchangeFrontendResponse {
+func (s *Service) GetExchange(userID string) models.ExchangeFrontendResponse {
 	var response models.ExchangeFrontendResponse
 	id, _ := uuid.Parse(userID)
 
-	res, err := store.GetSettingByName(id, models.Exchange)
+	res, err := s.DB.GetSettingByName(id, models.Exchange)
 	if err != nil {
 		utils.ErrorLogger.Println("Error finding Exchange setting:", err)
 		return response

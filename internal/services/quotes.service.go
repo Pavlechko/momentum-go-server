@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
@@ -39,13 +38,13 @@ func GetRandomQuote() models.QuoteResponse {
 	return response
 }
 
-func GetQuote(userID string) models.QuoteResponse {
+func (s *Service) GetQuote(userID string) models.QuoteResponse {
 	const oneDayHours = 24
 	var response models.QuoteResponse
 	currentTime := time.Now()
 	id, _ := uuid.Parse(userID)
 
-	res, err := store.GetSettingByName(id, models.Quote)
+	res, err := s.DB.GetSettingByName(id, models.Quote)
 	if err != nil {
 		utils.ErrorLogger.Println("Error finding Quote setting:", err)
 		return response
@@ -59,5 +58,5 @@ func GetQuote(userID string) models.QuoteResponse {
 		}
 		return response
 	}
-	return QuoteUpdate(userID)
+	return s.QuoteUpdate(userID)
 }

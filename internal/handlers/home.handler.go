@@ -11,7 +11,6 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 
 	utils.InfoLogger.Println("userID:", userID)
 	Response := h.Service.GetData(userID)
-	utils.InfoLogger.Println("Response:", Response)
 
 	err := h.WriteJSON(w, http.StatusOK, Response)
 	if err != nil {

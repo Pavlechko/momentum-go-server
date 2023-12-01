@@ -14,10 +14,10 @@ import (
 
 type APIServer struct {
 	listenPort string
-	handler    *handlers.Handler
+	handler    handlers.IHandler
 }
 
-func NewAPIServer(listenPort string, handler *handlers.Handler) *APIServer {
+func NewAPIServer(listenPort string, handler handlers.IHandler) *APIServer {
 	return &APIServer{
 		listenPort: listenPort,
 		handler:    handler,

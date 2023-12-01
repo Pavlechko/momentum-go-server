@@ -4,20 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"momentum-go-server/internal/services"
 )
 
 type ErrorMessage struct {
 	Error string
-}
-
-type Handler struct {
-	Service *services.Service
-}
-
-func CreateHandler(service *services.Service) *Handler {
-	return &Handler{Service: service}
 }
 
 func (h *Handler) WriteToken(w http.ResponseWriter, status int, token string) {

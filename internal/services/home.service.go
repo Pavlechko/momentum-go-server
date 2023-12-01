@@ -2,17 +2,8 @@ package services
 
 import (
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
-
-func CreateService(db *store.Database) *Service {
-	return &Service{
-		DB:      db,
-		Counter: 0,
-		Quit:    make(chan bool),
-	}
-}
 
 func (s *Service) GetData(userID string) models.ResponseObj {
 	Response := models.ResponseObj{}
@@ -88,7 +79,6 @@ func (s *Service) getSetting(c chan<- models.SettingResponse, userID string) {
 
 func (s *Service) checkCounter() {
 	s.Mu.Lock()
-	utils.InfoLogger.Println("Counter:", s.Counter)
 	s.Counter++
 	s.Mu.Unlock()
 	if s.Counter >= 6 {

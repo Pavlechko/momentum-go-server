@@ -18,6 +18,16 @@ type Database struct {
 	DB *gorm.DB
 }
 
+type Data interface {
+	Close()
+	CreateUser(user models.UserInput) (*models.UserResponse, error)
+	GetUser(user models.UserInput) (*models.UserResponseWithHash, error)
+	GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error)
+	GetSettings(id uuid.UUID) models.SettingResponse
+	UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error)
+	createDefaultSettings(id uuid.UUID)
+}
+
 var now = time.Now()
 
 func ConnectDB() (*Database, error) {
@@ -162,7 +172,8 @@ func (db *Database) GetSettings(id uuid.UUID) models.SettingResponse {
 func (db *Database) GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error) {
 	var setting models.Setting
 
-	result := db.DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	// result := db.DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	result := db.DB.Where("user_id = ? AND name = ?", id, name).Find(&setting)
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
 		return setting, result.Error

@@ -16,12 +16,8 @@ var InfoLogger *log.Logger
 var ErrorLogger *log.Logger
 
 func init() {
-	path, err := filepath.Abs("./logs")
-	if err != nil {
-		log.Println("Error riding absolute path: ", err)
-		return
-	}
-	myLog, err := os.OpenFile(path+"/momentum-log.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, chmod)
+	pathSeck := filepath.FromSlash("logs/momentum-log.log")
+	myLog, err := os.OpenFile(pathSeck, os.O_RDWR|os.O_CREATE|os.O_APPEND, chmod)
 	if err != nil {
 		log.Println("Error opening file: ", err)
 		return

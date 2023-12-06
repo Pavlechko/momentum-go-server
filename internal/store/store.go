@@ -25,7 +25,6 @@ type Data interface {
 	GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error)
 	GetSettings(id uuid.UUID) models.SettingResponse
 	UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error)
-	createDefaultSettings(id uuid.UUID)
 }
 
 var now = time.Now()

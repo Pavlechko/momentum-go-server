@@ -30,10 +30,7 @@ func (s *Service) GetWeatherData(userID string) models.FrontendWeatherResponse {
 }
 
 func getWindDirection(windSpeed, rawDirect float64) string {
-	const west = "m/s W"
-	if rawDirect >= 342.5 && rawDirect <= 22.5 {
-		return fmt.Sprintf("%.0f", windSpeed) + west
-	} else if rawDirect >= 22.6 && rawDirect <= 67.5 {
+	if rawDirect >= 22.6 && rawDirect <= 67.5 {
 		return fmt.Sprintf("%.0f", windSpeed) + "m/s NE"
 	} else if rawDirect >= 67.6 && rawDirect <= 112.5 {
 		return fmt.Sprintf("%.0f", windSpeed) + "m/s E"
@@ -44,9 +41,11 @@ func getWindDirection(windSpeed, rawDirect float64) string {
 	} else if rawDirect >= 202.6 && rawDirect <= 245.5 {
 		return fmt.Sprintf("%.0f", windSpeed) + "m/s SW"
 	} else if rawDirect >= 245.6 && rawDirect <= 297.5 {
-		return fmt.Sprintf("%.0f", windSpeed) + west
+		return fmt.Sprintf("%.0f", windSpeed) + "m/s W"
+	} else if rawDirect >= 297.6 && rawDirect <= 342.5 {
+		return fmt.Sprintf("%.0f", windSpeed) + "m/s NW"
 	}
-	return fmt.Sprintf("%.0f", windSpeed) + "m/s NW"
+	return fmt.Sprintf("%.0f", windSpeed) + "m/s N"
 }
 
 func getOpenWeatherData(city string) models.FrontendWeatherResponse {
@@ -198,6 +197,8 @@ func GetNewWeatherData(source, city string) models.FrontendWeatherResponse {
 		newWeather = getOpenWeatherData(city)
 	case "TomorrowWeather":
 		newWeather = getTomorrowWeatherData(city)
+	default:
+		newWeather = getOpenWeatherData(city)
 	}
 	return newWeather
 }

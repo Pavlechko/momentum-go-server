@@ -14,10 +14,23 @@ import (
 	"momentum-go-server/internal/utils"
 )
 
-var DB *gorm.DB
+type Database struct {
+	DB *gorm.DB
+}
+
+type Data interface {
+	Close()
+	CreateUser(user models.UserInput) (*models.UserResponse, error)
+	GetUser(user models.UserInput) (*models.UserResponseWithHash, error)
+	GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error)
+	GetSettings(id uuid.UUID) models.SettingResponse
+	UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error)
+	createDefaultSettings(id uuid.UUID)
+}
+
 var now = time.Now()
 
-func ContentDB() {
+func ConnectDB() (*Database, error) {
 	err := godotenv.Load()
 	if err != nil {
 		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
@@ -30,26 +43,37 @@ func ContentDB() {
 		os.Getenv("POSTGRES_PORT"),
 	)
 
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
-		return
+		return nil, err
 	}
 	fmt.Println("Connected successfully to the Database")
 	utils.InfoLogger.Println("Connected successfully to the Database")
 
-	err = DB.AutoMigrate(&models.User{}, &models.Setting{})
+	err = db.AutoMigrate(&models.User{}, &models.Setting{})
 	if err != nil {
 		utils.ErrorLogger.Println("Error migration tables:", err)
+		return nil, err
 	}
+	return &Database{DB: db}, err
+}
+
+func (db *Database) Close() {
+	sqlDB, err := db.DB.DB()
+	if err != nil {
+		utils.ErrorLogger.Println("Error closing database connection:", err)
+		return
+	}
+	sqlDB.Close()
 }
 
 // Creates a record of a new user in the database if his name is unique
-func CreateUser(user models.UserInput) (*models.UserResponse, error) {
+func (db *Database) CreateUser(user models.UserInput) (*models.UserResponse, error) {
 	var userModel models.User
 
-	if isEntityExist(&userModel, user.Name) {
+	if db.isEntityExist(&userModel, user.Name) {
 		utils.ErrorLogger.Println("user with name:", user.Name, "already exists")
 		return &models.UserResponse{}, fmt.Errorf("user with name: %v already exists", user.Name)
 	}
@@ -61,7 +85,7 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 		UpdatedAt:    now,
 	}
 
-	result := DB.Create(&newUser)
+	result := db.DB.Create(&newUser)
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error creating the user", user.Name, "Error message:", result.Error.Error())
@@ -72,19 +96,19 @@ func CreateUser(user models.UserInput) (*models.UserResponse, error) {
 		ID:   newUser.ID,
 		Name: newUser.Name,
 	}
-	createDefaultSettings(userResponse.ID)
+	db.createDefaultSettings(userResponse.ID)
 	return userResponse, nil
 }
 
-func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
+func (db *Database) GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 	var userModel models.User
 
-	if !isEntityExist(&userModel, user.Name) {
+	if !db.isEntityExist(&userModel, user.Name) {
 		utils.ErrorLogger.Println("user with the name:", user.Name, "not found")
 		return &models.UserResponseWithHash{}, fmt.Errorf("user with the name: %v not found", user.Name)
 	}
 
-	result := DB.Find(&userModel, "name = ?", user.Name)
+	result := db.DB.Find(&userModel, "name = ?", user.Name)
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user", result.Error.Error())
@@ -102,29 +126,29 @@ func GetUser(user models.UserInput) (*models.UserResponseWithHash, error) {
 	return userResponse, nil
 }
 
-func isEntityExist(model *models.User, name string) bool {
-	entityExist := DB.Find(&model, "name = ?", name)
+func (db *Database) isEntityExist(model *models.User, name string) bool {
+	entityExist := db.DB.Find(&model, "name = ?", name)
 
 	return entityExist.RowsAffected == 1
 }
 
 // Creates a record with default settings for the user
-func createDefaultSettings(id uuid.UUID) {
+func (db *Database) createDefaultSettings(id uuid.UUID) {
 	settings := utils.GetDefaultSettings(id)
 
-	var result = DB.Create(settings)
+	var result = db.DB.Create(settings)
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error creating default settings:", result.Error.Error())
 		return
 	}
 }
 
-func GetSettings(id uuid.UUID) models.SettingResponse {
+func (db *Database) GetSettings(id uuid.UUID) models.SettingResponse {
 	var settingsModel []models.Setting
 
 	responseMap := make(map[string]models.ValueMap)
 
-	result := DB.Find(&settingsModel, "user_id = ?", id)
+	result := db.DB.Find(&settingsModel, "user_id = ?", id)
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user settings", result.Error.Error())
@@ -145,10 +169,11 @@ func GetSettings(id uuid.UUID) models.SettingResponse {
 	return settingRes
 }
 
-func GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error) {
+func (db *Database) GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, error) {
 	var setting models.Setting
 
-	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	// result := db.DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	result := db.DB.Where("user_id = ? AND name = ?", id, name).Find(&setting)
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
 		return setting, result.Error
@@ -156,10 +181,10 @@ func GetSettingByName(id uuid.UUID, name models.SettingType) (models.Setting, er
 	return setting, nil
 }
 
-func UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error) {
+func (db *Database) UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (models.Setting, error) {
 	var setting models.Setting
 
-	tx := DB.Begin()
+	tx := db.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -171,14 +196,14 @@ func UpdateSetting(id uuid.UUID, name models.SettingType, v map[string]string) (
 		return setting, err
 	}
 
-	result := DB.Find(&setting, "user_id = ? AND name = ?", id, name)
+	result := db.DB.Find(&setting, "user_id = ? AND name = ?", id, name)
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error finding user setting:", result.Error.Error())
 		tx.Rollback()
 		return setting, result.Error
 	}
 
-	result = DB.Model(&setting).Updates(models.Setting{Value: v})
+	result = db.DB.Model(&setting).Updates(models.Setting{Value: v})
 	if result.Error != nil {
 		utils.ErrorLogger.Println("Error update setting:", result.Error.Error())
 		tx.Rollback()

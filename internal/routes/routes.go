@@ -14,21 +14,23 @@ import (
 
 type APIServer struct {
 	listenPort string
+	handler    handlers.IHandler
 }
 
-func NewAPIServer(listenPort string) *APIServer {
+func NewAPIServer(listenPort string, handler handlers.IHandler) *APIServer {
 	return &APIServer{
 		listenPort: listenPort,
+		handler:    handler,
 	}
 }
 
 func (s *APIServer) Run() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/auth/signup", handlers.SignUpHandler).Methods("POST")
-	r.HandleFunc("/auth/signin", handlers.SignInHandler).Methods("POST")
-	r.HandleFunc("/", middlware.VerifyJWT(handlers.Home)).Methods("GET")
-	r.HandleFunc("/setting/{type}", middlware.VerifyJWT(handlers.UpdateSettings)).Methods("PUT")
+	r.HandleFunc("/auth/signup", s.handler.SignUpHandler).Methods("POST")
+	r.HandleFunc("/auth/signin", s.handler.SignInHandler).Methods("POST")
+	r.HandleFunc("/", middlware.VerifyJWT(s.handler.Home)).Methods("GET")
+	r.HandleFunc("/setting/{type}", middlware.VerifyJWT(s.handler.UpdateSettings)).Methods("PUT")
 
 	headersOk := h.AllowedHeaders([]string{"Authorization", "Accept", "Accept-Language", "Content-Type", "Content-Language", "Origin"})
 	originsOk := h.AllowedOrigins([]string{"http://localhost:3000"})

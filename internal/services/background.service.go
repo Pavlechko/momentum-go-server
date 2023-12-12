@@ -14,7 +14,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
@@ -125,13 +124,13 @@ func GetRandomBackground(source string) models.FrontendBackgroundImageResponse {
 	return getPexelsBackgroundImage()
 }
 
-func GetBackgroundData(userID string) models.FrontendBackgroundImageResponse {
+func (s *Service) GetBackgroundData(userID string) models.FrontendBackgroundImageResponse {
 	const oneDayHours = 24
 	var response models.FrontendBackgroundImageResponse
 	currentTime := time.Now()
 	id, _ := uuid.Parse(userID)
 
-	res, err := store.GetSettingByName(id, models.Background)
+	res, err := s.DB.GetSettingByName(id, models.Background)
 	if err != nil {
 		utils.ErrorLogger.Println("Error finding Background setting:", err)
 		return response

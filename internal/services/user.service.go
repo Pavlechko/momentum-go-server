@@ -6,14 +6,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"momentum-go-server/internal/models"
-	"momentum-go-server/internal/store"
 	"momentum-go-server/internal/utils"
 )
 
 const minNameLeng = 3
 const minPassLeng = 6
 
-func CreateUser(user models.UserInput) (string, error) {
+func (s *Service) CreateUser(user models.UserInput) (string, error) {
 	err := validateUser(user)
 
 	if err != nil {
@@ -28,7 +27,7 @@ func CreateUser(user models.UserInput) (string, error) {
 
 	user.Password = hashPasword
 
-	newUser, err := store.CreateUser(user)
+	newUser, err := s.DB.CreateUser(user)
 
 	if err != nil {
 		return "", fmt.Errorf("%s", err.Error())
@@ -43,14 +42,14 @@ func CreateUser(user models.UserInput) (string, error) {
 	return token, nil
 }
 
-func GetUser(user models.UserInput) (string, error) {
+func (s *Service) GetUser(user models.UserInput) (string, error) {
 	err := validateUser(user)
 
 	if err != nil {
 		return "", fmt.Errorf("%s", err.Error())
 	}
 
-	existUser, err := store.GetUser(user)
+	existUser, err := s.DB.GetUser(user)
 
 	if err != nil {
 		return "", fmt.Errorf("%s", err.Error())

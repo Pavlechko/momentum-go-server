@@ -29,6 +29,7 @@ func (h *Handler) WriteJSON(w http.ResponseWriter, status int, d any) error {
 
 func (h *Handler) IsDecodeJSONRequest(w http.ResponseWriter, r *http.Request, v interface{}) bool {
 	err := json.NewDecoder(r.Body).Decode(v)
+
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return false

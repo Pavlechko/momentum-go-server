@@ -147,6 +147,5 @@ func (s *Service) GetBackgroundData(userID string) models.FrontendBackgroundImag
 		}
 		return response
 	}
-	response = GetRandomBackground(res.Value["source"])
-	return response
+	return s.BackgroundUpdate(userID, res.Value["source"])
 }

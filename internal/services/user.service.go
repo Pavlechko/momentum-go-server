@@ -9,16 +9,7 @@ import (
 	"momentum-go-server/internal/utils"
 )
 
-const minNameLeng = 3
-const minPassLeng = 6
-
 func (s *Service) CreateUser(user models.UserInput) (string, error) {
-	err := validateUser(user)
-
-	if err != nil {
-		return "", fmt.Errorf("%s", err.Error())
-	}
-
 	hashPasword, err := hashPassword(user.Password)
 
 	if err != nil {
@@ -43,12 +34,6 @@ func (s *Service) CreateUser(user models.UserInput) (string, error) {
 }
 
 func (s *Service) GetUser(user models.UserInput) (string, error) {
-	err := validateUser(user)
-
-	if err != nil {
-		return "", fmt.Errorf("%s", err.Error())
-	}
-
 	existUser, err := s.DB.GetUser(user)
 
 	if err != nil {
@@ -72,16 +57,6 @@ func (s *Service) GetUser(user models.UserInput) (string, error) {
 	}
 
 	return token, nil
-}
-
-func validateUser(user models.UserInput) error {
-	if len(user.Name) < minNameLeng {
-		return fmt.Errorf("your name is too short, min 3 symbols")
-	} else if len(user.Password) < minPassLeng {
-		return fmt.Errorf("your password is too short, min 6 symbols")
-	}
-
-	return nil
 }
 
 func hashPassword(password string) (string, error) {

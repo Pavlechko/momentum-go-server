@@ -9,43 +9,69 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/utils"
 )
 
-func GetMarket(symbol string) models.StockMarketResponse {
+func (s *Service) GetMarket(symbol string) models.StockMarketResponse {
 	var response models.StockMarket
 	var frontendResponse models.StockMarketResponse
 
-	err := godotenv.Load()
-	if err != nil {
-		utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
-	}
+	cachedData, err := s.Redis.GetData(symbol)
 
-	apiURL := fmt.Sprintf("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=", symbol)
+	if err == redis.Nil {
+		utils.InfoLogger.Println("cachedData is Nil")
+		err = godotenv.Load()
+		if err != nil {
+			utils.ErrorLogger.Printf("Error loading .env file, %s", err.Error())
+		}
 
-	resp, err := http.Get(apiURL + os.Getenv("STOCK_MARKET_API"))
+		apiURL := fmt.Sprintf("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=", symbol)
 
-	if err != nil {
-		utils.ErrorLogger.Println("Error creating HTTP request:", err)
+		resp, err := http.Get(apiURL + os.Getenv("STOCK_MARKET_API"))
+
+		if err != nil {
+			utils.ErrorLogger.Println("Error creating HTTP request:", err)
+			return frontendResponse
+		}
+
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			utils.ErrorLogger.Println("Error reading HTTP response body:", err)
+			return frontendResponse
+		}
+
+		s.Redis.SetData(symbol, body)
+
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			utils.ErrorLogger.Println("json.Unmarshal response", err)
+			return frontendResponse
+		}
+
+		frontendResponse = models.StockMarketResponse{
+			Symbol:        response.Market.Symbol,
+			Price:         response.Market.Price,
+			Change:        response.Market.Change,
+			ChangePercent: response.Market.ChangePercent,
+		}
+
 		return frontendResponse
+	} else if err != nil {
+		utils.ErrorLogger.Println("An unexpected error", err)
 	}
 
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		utils.ErrorLogger.Println("Error reading HTTP response body:", err)
-		return frontendResponse
-	}
-
-	err = json.Unmarshal(body, &response)
+	err = json.Unmarshal(cachedData, &response)
 	if err != nil {
 		utils.ErrorLogger.Println("json.Unmarshal response", err)
 		return frontendResponse
 	}
 
+	utils.InfoLogger.Println("Data from cachedData:", response)
 	frontendResponse = models.StockMarketResponse{
 		Symbol:        response.Market.Symbol,
 		Price:         response.Market.Price,
@@ -54,6 +80,7 @@ func GetMarket(symbol string) models.StockMarketResponse {
 	}
 
 	return frontendResponse
+
 }
 
 func (s *Service) GetMarketData(userID string) models.StockMarketResponse {
@@ -66,6 +93,6 @@ func (s *Service) GetMarketData(userID string) models.StockMarketResponse {
 		return response
 	}
 	var symbol = res.Value["symbol"]
-	response = GetMarket(symbol)
+	response = s.GetMarket(symbol)
 	return response
 }

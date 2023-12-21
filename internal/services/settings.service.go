@@ -85,7 +85,7 @@ func (s *Service) ExchangeUpdate(userID, source, from, to string) models.Exchang
 }
 
 func (s *Service) MarketUpdate(userID, symbol string) models.StockMarketResponse {
-	newMarket := GetMarket(symbol)
+	newMarket := s.GetMarket(symbol)
 	id, _ := uuid.Parse(userID)
 	v := map[string]string{
 		"symbol": symbol,

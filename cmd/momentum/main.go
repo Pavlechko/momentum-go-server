@@ -19,7 +19,7 @@ func main() {
 	}
 	defer db.Close()
 
-	redisClient := redis.NewRedisClient("localhost:6379", 0, ctx)
+	redisClient := redis.NewRedisClient("localhost", "6379", 0, ctx)
 
 	service := services.CreateService(db, *redisClient)
 	handler := handlers.CreateHandler(service)

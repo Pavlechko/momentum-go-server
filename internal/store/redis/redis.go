@@ -2,6 +2,8 @@ package redis
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -12,12 +14,19 @@ type RedisClient struct {
 	ctx    context.Context
 }
 
-func NewRedisClient(addr string, db int, ctx context.Context) *RedisClient {
+func NewRedisClient(host, port string, db int, ctx context.Context) *RedisClient {
+	if os.Getenv("REDIS_HOST") != "" {
+		host = os.Getenv("REDIS_HOST")
+	}
+	if string(os.Getenv("REDIS_PORT")) != "" {
+		port = string(os.Getenv("REDIS_PORT"))
+	}
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr: addr,
+		Addr: host + ":" + port,
 		DB:   db,
 	})
-
+	fmt.Println("Redis: ", host+":"+port)
 	return &RedisClient{client: rdb, ctx: ctx}
 }
 

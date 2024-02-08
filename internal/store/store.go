@@ -51,6 +51,13 @@ func ConnectDB() (*Database, error) {
 	fmt.Println("Connected successfully to the Database")
 	utils.InfoLogger.Println("Connected successfully to the Database")
 
+	result := db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+	if result.Error != nil {
+		utils.ErrorLogger.Println("failed to create 'uuid-ossp' extension")
+	}
+	fmt.Println("Extension 'uuid-ossp' created successfully.")
+	utils.InfoLogger.Println("Extension 'uuid-ossp' created successfully.")
+
 	err = db.AutoMigrate(&models.User{}, &models.Setting{})
 	if err != nil {
 		utils.ErrorLogger.Println("Error migration tables:", err)

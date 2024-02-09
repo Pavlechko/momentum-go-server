@@ -5,10 +5,12 @@ import (
 
 	"momentum-go-server/internal/models"
 	"momentum-go-server/internal/store"
+	"momentum-go-server/internal/store/redis"
 )
 
 type Service struct {
 	DB      store.Data
+	Redis   redis.RedisClient
 	Mu      sync.Mutex
 	Counter int
 	Quit    chan bool
@@ -25,9 +27,10 @@ type IService interface {
 	ExchangeUpdate(userID string, source string, from string, to string) models.ExchangeFrontendResponse
 }
 
-func CreateService(db store.Data) *Service {
+func CreateService(db store.Data, redisClient redis.RedisClient) *Service {
 	return &Service{
 		DB:      db,
+		Redis:   redisClient,
 		Counter: 0,
 		Quit:    make(chan bool),
 	}

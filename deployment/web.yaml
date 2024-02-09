@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-front
+spec:
+  selector:
+    matchLabels:
+      app: go-api
+      tier: frontend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: go-api
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+      - name: react
+        image: pavlechko/web-momentum:0.6
+        env:
+          - name: REACT_APP_API_URL
+            value: go-api.default.svc.cluster.local
+        ports:
+          - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-front
+spec:
+  selector:
+    app: go-api
+    tier: frontend
+  ports:
+  - protocol: "TCP"
+    port: 3000
+    targetPort: 3000
+  type: NodePort
